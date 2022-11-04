@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
@@ -101,7 +102,16 @@ class _MainWidgetState extends State<MainWidget> {
       floatingActionButton: _selectedIndex == 1 ? botonflotante : null,
       backgroundColor: Colors.black,
       appBar: AppBar(
-        actions: <Widget>[IconButton(onPressed: () {}, icon: iconosuperior)],
+        actions: <Widget>[
+          IconButton(
+              onPressed: () {
+                if (currentAppState.getAppConnectionState ==
+                    MQTTAppConnectionState.disconnected) {
+                  _configureAndConnect();
+                }
+              },
+              icon: iconosuperior)
+        ],
         backgroundColor: grisbase,
         title: const Text('Smart Home'),
       ),
