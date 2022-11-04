@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
+import 'package:smart_home/nuevatarea.dart';
 
 class MainWidget extends StatefulWidget {
   @override
@@ -59,7 +60,10 @@ class _MainWidgetState extends State<MainWidget> {
     final Widget iconosuperior;
 
     final Widget botonflotante = FloatingActionButton(
-      onPressed: (() {}),
+      onPressed: (() {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => NuevaTarea(manager, currentAppState)));
+      }),
       backgroundColor: Colors.orange,
       child: const Icon(Icons.add),
     );
@@ -126,7 +130,6 @@ class _MainWidgetState extends State<MainWidget> {
   }
 
   void _configureAndConnect() {
-    // ignore: flutter_style_todos
     manager.initializeMQTTClient();
     manager.connect();
   }
@@ -151,12 +154,6 @@ class Home extends StatelessWidget {
         }
       }
     }
-
-    //widget de testeo con zona fija
-    // List<Widget> _zonas = [
-    //   Zona('sin zona'),
-    //   // Zona('coso2'),
-    // ];
     return ListView(
       children: zonas,
     );
@@ -212,7 +209,7 @@ class Zona extends StatelessWidget {
     List<Widget> grilla = []; //arreglo de row
 
     grilla.add(Container(
-        child: Text(nombrezona, style: TextStyle(color: Colors.white))));
+        child: Text(nombrezona, style: const TextStyle(color: Colors.white))));
 
     if (estadomqtt.getReceivedStatus.isNotEmpty) {
       //recorro para cada elemento del JSON
@@ -261,27 +258,9 @@ class Zona extends StatelessWidget {
       ),
       decoration: BoxDecoration(
           color: Colors.grey[850],
-          borderRadius: BorderRadius.all(Radius.circular(8))),
+          borderRadius: const BorderRadius.all(Radius.circular(8))),
       child: Column(
         children: grilla,
-        // children: [
-        //   Container(
-        //       child: Text(nombrezona, style: TextStyle(color: Colors.white))),
-        //   Row(
-        //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //     children: [
-        //       IconoModRele('R00001'),
-        //     ],
-        //   ),
-        //   Row(
-        //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //     children: [
-        //       IconoModSens('S00001', 'temperatura'),
-        //       IconoModSens('S00001', 'humedad'),
-        //       IconoModSens('S00001', 'presion'),
-        //     ],
-        //   )
-        // ],
       ),
     );
   }
@@ -321,7 +300,7 @@ class _IconoModReleState extends State<IconoModRele> {
     return Container(
       height: 90,
       width: 90,
-      margin: EdgeInsets.only(
+      margin: const EdgeInsets.only(
         top: 5,
         left: 8,
         right: 8,
@@ -329,7 +308,7 @@ class _IconoModReleState extends State<IconoModRele> {
       ),
       decoration: BoxDecoration(
           color: estadorele ? Colors.orange : Colors.grey,
-          borderRadius: BorderRadius.all(Radius.circular(8))),
+          borderRadius: const BorderRadius.all(Radius.circular(8))),
       child: TextButton(
           onPressed: () {
             if (estadorele) {
