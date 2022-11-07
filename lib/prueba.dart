@@ -17,7 +17,7 @@ class DBCausaTipo extends StatefulWidget {
 }
 
 class _DBCausaTipoState extends State<DBCausaTipo> {
-  late String dbComparacionValue;
+  late String db3Value;
   List<String> tipocomparacion = ['tipo invalido'];
 
   List<String> tipoS = [
@@ -37,7 +37,7 @@ class _DBCausaTipoState extends State<DBCausaTipo> {
     if (widget.id[0] == 'M' && widget.id[1] != 'o') {
       tipocomparacion = tipoM;
     }
-    dbComparacionValue = tipocomparacion.first;
+    db3Value = tipocomparacion.first;
     super.initState();
   }
 
@@ -45,7 +45,7 @@ class _DBCausaTipoState extends State<DBCausaTipo> {
   Widget build(BuildContext context) {
     if (tipocomparacion.length > 1) {
       return DropdownButton<String>(
-        value: dbComparacionValue,
+        value: db3Value,
         icon: const Icon(Icons.arrow_downward),
         elevation: 16,
         dropdownColor: Colors.black,
@@ -54,17 +54,17 @@ class _DBCausaTipoState extends State<DBCausaTipo> {
           height: 2,
           color: Colors.orange,
         ),
-        onChanged: (String? valuecomparacion) {
+        onChanged: (String? valuecomp) {
           setState(() {
-            dbComparacionValue = valuecomparacion!;
-            // manager.publish('/setDB/zona/${widget.id}', valuecomparacion);
+            db3Value = valuecomp!;
+            // manager.publish('/setDB/zona/${widget.id}', valuecomp);
           });
         },
-        items: tipocomparacion
-            .map<DropdownMenuItem<String>>((String valuecomparacion) {
+        items:
+            tipocomparacion.map<DropdownMenuItem<String>>((String valuecomp) {
           return DropdownMenuItem<String>(
-            value: valuecomparacion,
-            child: Text(valuecomparacion),
+            value: valuecomp,
+            child: Text(valuecomp),
           );
         }).toList(),
       );

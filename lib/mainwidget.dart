@@ -443,16 +443,16 @@ class Modulo extends StatelessWidget {
       ),
       decoration: BoxDecoration(
           color: Colors.grey[850],
-          borderRadius: BorderRadius.all(Radius.circular(8))),
+          borderRadius: const BorderRadius.all(Radius.circular(8))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-              margin: EdgeInsets.only(left: 10),
+              margin: const EdgeInsets.only(left: 10),
               child: Text(id,
                   style: const TextStyle(fontSize: 20, color: Colors.white))),
           Container(
-            margin: EdgeInsets.only(right: 5),
+            margin: const EdgeInsets.only(right: 5),
             child: DropdownButtonExample(id, zona),
           )
         ],

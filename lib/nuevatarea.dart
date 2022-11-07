@@ -12,45 +12,71 @@ class NuevaTarea extends StatefulWidget {
   State<NuevaTarea> createState() => _NuevaTareaState();
 }
 
+// Estructura Causa:
+//modulo-variable-tipo-valor
 class _NuevaTareaState extends State<NuevaTarea> {
   TextEditingController timeinput = TextEditingController();
+  late TextEditingController _controller;
+  late String db1Value;
+  late String db2Value;
+  late String db3Value;
+  List<String> tipomodulo = ['Modulo', 'Tiempo'];
+//-------------------------------- 2do drop buton
+  List<String> tipovar = ['tipo invalido'];
+  List<String> tipoVarS = [
+    'Variab.',
+    'Temp.',
+    'Hum.',
+    'Pres.',
+  ];
+  List<String> tipoVarM = [
+    'Variab.',
+    'Movimiento',
+  ];
+  List<String> tipoVarT = [
+    'Variab.',
+    'periodo',
+  ];
 
-  late String dbComparacionValue;
-
-  List<String> tipocomparacion = ['tipo invalido'];
-
-  List<String> tipoS = [
+//-------------------------------- 3er drop buton
+  List<String> tipocomp = ['tipo invalido'];
+  List<String> tipoCompS = [
     'Tipo',
     'Mayor que',
     'Menor que',
     'Igual a',
   ];
-  List<String> tipoM = ['Tipo', 'Detecta mov'];
-
-  late TextEditingController _controller;
-  late String dbCausaValue;
-  List<String> tipomodulo = ['Modulo', 'Tiempo'];
+  List<String> tipoCompM = ['Tipo', 'Detecta mov'];
+  List<String> tipoCompT = ['Tipo', 'cada hora'];
+  //-----------------------------------
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
-    dbCausaValue =
-        tipomodulo.first; //esta var contiene el tipo de modulo elegido
+    db1Value = tipomodulo.first; //esta var contiene el tipo de modulo elegido
 
-    if (dbCausaValue[0] == 'S') {
-      tipocomparacion = tipoS;
+    if (db1Value[0] == 'S') {
+      tipovar = tipoVarS;
+      tipocomp = tipoCompS;
     }
-    if (dbCausaValue[0] == 'M' && dbCausaValue[1] != 'o') {
-      tipocomparacion = tipoM;
+    if (db1Value[0] == 'M' && db1Value[1] != 'o') {
+      tipovar = tipoVarM;
+      tipocomp = tipoCompM;
     }
-    dbComparacionValue = tipocomparacion.first;
+    if (db1Value[0] == 'T') {
+      tipovar = tipoVarT;
+      tipocomp = tipoCompT;
+    }
+    db2Value = tipovar.first;
+    db3Value = tipocomp.first;
   }
 
   @override
   Widget build(BuildContext context) {
     List<String> tipomodulo = [
-      'Modulo'
+      'Modulo',
+      'Tiempo'
     ]; //esta linea es para que no se descoordine todo si entran y salen mods
     if (widget.appState.getReceivedStatus.isNotEmpty) {
       for (var i in jsonDecode(widget.appState.getReceivedStatus)) {
@@ -70,6 +96,7 @@ class _NuevaTareaState extends State<NuevaTarea> {
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
+            //------------------------------------------------------------------ arranca columna
             Container(
               child: const Text(
                 'Nombre',
@@ -111,6 +138,7 @@ class _NuevaTareaState extends State<NuevaTarea> {
                 );
               },
             ),
+            //------------------------------------------------------------------ segundo piso
             Container(
               child: const Text(
                 'Causa',
@@ -120,7 +148,7 @@ class _NuevaTareaState extends State<NuevaTarea> {
             Row(
               children: [
                 DropdownButton<String>(
-                  value: dbCausaValue,
+                  value: db1Value,
                   icon: const Icon(Icons.arrow_downward),
                   elevation: 16,
                   dropdownColor: Colors.black,
@@ -132,17 +160,27 @@ class _NuevaTareaState extends State<NuevaTarea> {
                   onChanged: (String? valuemodulo) {
                     //para la seleccion de modulo
                     setState(() {
-                      dbCausaValue = valuemodulo!;
-                      if (dbCausaValue[0] == 'S') {
-                        tipocomparacion = tipoS;
+                      db1Value = valuemodulo!;
+                      if (db1Value[0] == 'S') {
+                        tipovar = tipoVarS;
+                        tipocomp = tipoCompS;
                       } else {
-                        if (dbCausaValue[0] == 'M' && dbCausaValue[1] != 'o') {
-                          tipocomparacion = tipoM;
+                        if (db1Value[0] == 'M' && db1Value[1] != 'o') {
+                          tipovar = tipoVarM;
+                          tipocomp = tipoCompM;
                         } else {
-                          tipocomparacion = ['tipo invalido'];
+                          if (db1Value[0] == 'T') {
+                            tipovar = tipoVarT;
+                            tipocomp = tipoCompT;
+                          } else {
+                            tipovar = ['tipo invalido'];
+                            tipocomp = ['Tipo'];
+                          }
                         }
                       }
-                      dbComparacionValue = tipocomparacion.first;
+                      db2Value = tipovar.first;
+                      db3Value = tipocomp.first;
+                      print(db1Value);
                       // manager.publish('/setDB/zona/${widget.id}', valuemodulo);
                     });
                   },
@@ -155,34 +193,63 @@ class _NuevaTareaState extends State<NuevaTarea> {
                   }).toList(),
                 ),
                 //------------------------------------------------------------
-                tipocomparacion.first == 'tipo invalido'
-                    ? Container()
-                    : DropdownButton<String>(
-                        value: dbComparacionValue,
-                        icon: const Icon(Icons.arrow_downward),
-                        elevation: 16,
-                        dropdownColor: Colors.black,
-                        style: const TextStyle(color: Colors.white),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.orange,
-                        ),
-                        onChanged: (String? valuecomparacion) {
-                          setState(() {
-                            dbComparacionValue = valuecomparacion!;
-                            // manager.publish('/setDB/zona/${widget.id}', valuecomparacion);
-                          });
-                        },
-                        items: tipocomparacion.map<DropdownMenuItem<String>>(
-                            (String valuecomparacion) {
-                          return DropdownMenuItem<String>(
-                            value: valuecomparacion,
-                            child: Text(valuecomparacion),
-                          );
-                        }).toList(),
-                      ),
+
+                DropdownButton<String>(
+                  value: db2Value,
+                  icon: const Icon(Icons.arrow_downward),
+                  elevation: 16,
+                  dropdownColor: Colors.black,
+                  style: const TextStyle(color: Colors.white),
+                  underline: Container(
+                    height: 2,
+                    color: Colors.orange,
+                  ),
+                  onChanged: (String? valuevar) {
+                    setState(() {
+                      db2Value = valuevar!;
+                      // manager.publish('/setDB/zona/${widget.id}', valuevar);
+                    });
+                  },
+                  items:
+                      tipovar.map<DropdownMenuItem<String>>((String valuevar) {
+                    return DropdownMenuItem<String>(
+                      value: valuevar,
+                      child: Text(valuevar),
+                    );
+                  }).toList(),
+                ),
+
+                //------------------------------------------------------
+                DropdownButton<String>(
+                  value: db3Value,
+                  icon: const Icon(Icons.arrow_downward),
+                  elevation: 16,
+                  dropdownColor: Colors.black,
+                  style: const TextStyle(color: Colors.white),
+                  underline: Container(
+                    height: 2,
+                    color: Colors.orange,
+                  ),
+                  onChanged: (String? valuecomp) {
+                    setState(() {
+                      db3Value = valuecomp!;
+                      // manager.publish('/setDB/zona/${widget.id}', valuecomp);
+                    });
+                  },
+                  items: tipocomp
+                      .map<DropdownMenuItem<String>>((String valuecomp) {
+                    return DropdownMenuItem<String>(
+                      value: valuecomp,
+                      child: Text(valuecomp),
+                    );
+                  }).toList(),
+                ),
+                //------------------------------------------------------
               ],
             ),
+            //------------------------------------------------------------------ tercer piso
+
+            //------------------------------------------------------------------ cuarto piso
           ],
         ),
       ),
