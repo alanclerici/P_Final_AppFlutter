@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
@@ -175,7 +174,7 @@ class Task extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text('cpsp');
+    return CrtlTv('L00001');
   }
 }
 
@@ -518,6 +517,169 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
           child: Text(value),
         );
       }).toList(),
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+///
+class CrtlTv extends StatelessWidget {
+  const CrtlTv(this.id, {super.key});
+  final String id;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(
+        top: 20,
+        left: 15,
+        right: 15,
+      ),
+      decoration: BoxDecoration(
+          color: Colors.grey[850],
+          borderRadius: const BorderRadius.all(Radius.circular(8))),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          CtrlTvPower(),
+          CtrlTvPad(id),
+        ],
+      ),
+    );
+  }
+}
+
+class CtrlTvPad extends StatelessWidget {
+  const CtrlTvPad(this.id, {super.key});
+  final String id;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 170,
+      width: 170,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(id, style: const TextStyle(color: Colors.white)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconoTv('arriba'),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconoTv('izq'),
+              IconoTv('enter'),
+              IconoTv('der'),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconoTv('abajo'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CtrlTvPower extends StatelessWidget {
+  const CtrlTvPower({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 180,
+      width: 180,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconoTv('power'),
+              IconoTv('source'),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconoTv('canal+'),
+              IconoTv('vol+'),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconoTv('canal-'),
+              IconoTv('vol-'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class IconoTv extends StatelessWidget {
+  const IconoTv(this.tipo, {super.key});
+  final String tipo;
+
+  @override
+  Widget build(BuildContext context) {
+    var icono;
+
+    switch (tipo) {
+      case 'power':
+        icono = Icons.power_settings_new;
+        break;
+      case 'arriba':
+        icono = Icons.arrow_upward;
+        break;
+      case 'abajo':
+        icono = Icons.arrow_downward;
+        break;
+      case 'izq':
+        icono = Icons.arrow_back;
+        break;
+      case 'der':
+        icono = Icons.arrow_forward;
+        break;
+      case 'canal+':
+        icono = Icons.text_increase;
+        break;
+      case 'canal-':
+        icono = Icons.text_decrease;
+        break;
+      case 'vol+':
+        icono = Icons.volume_up;
+        break;
+      case 'vol-':
+        icono = Icons.volume_down;
+        break;
+      case 'enter':
+        icono = Icons.system_update_tv;
+        break;
+      case 'source':
+        icono = Icons.reset_tv;
+        break;
+      default:
+        icono = Icons.error;
+    }
+
+    return Container(
+      child: IconButton(
+        icon: Icon(icono),
+        color: Colors.white,
+        onPressed: () {},
+      ),
     );
   }
 }
