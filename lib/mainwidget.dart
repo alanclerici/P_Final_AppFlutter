@@ -174,7 +174,12 @@ class Task extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CrtlTv('L00001');
+    return Column(
+      children: [
+        LayoutTv('L00001'),
+        LayoutAire('L00001'),
+      ],
+    );
   }
 }
 
@@ -236,6 +241,14 @@ class Zona extends StatelessWidget {
               ],
             ));
           }
+          if (i['id'][0] == 'L') {
+            grilla.add(LayoutAire(i['id']));
+          }
+        }
+      }
+      for (var i in jsonDecode(estadomqtt.getReceivedStatus)) {
+        //si el elemento esta activo y corresponde con la zona
+        if (i['zona'] == nombrezona && i['estado'] == 'activo') {
           //en caso de que sea un modulo de rele agrega un icono a una lista auxiliar
           if (i['id'][0] == 'R') {
             cont++;
@@ -248,14 +261,15 @@ class Zona extends StatelessWidget {
               children: mods.sublist(cont - 3),
             ));
           }
+
+          //si juntamos menos de 3 elementos, los agregamos al final
+          if (cont % 3 > 0) {
+            grilla.add(Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: mods.sublist(cont - (cont % 3)),
+            ));
+          }
         }
-      }
-      //si juntamos menos de 3 elementos, los agregamos al final
-      if (cont % 3 > 0) {
-        grilla.add(Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: mods.sublist(cont - (cont % 3)),
-        ));
       }
     }
 
@@ -450,10 +464,23 @@ class Modulo extends StatelessWidget {
               margin: const EdgeInsets.only(left: 10),
               child: Text(id,
                   style: const TextStyle(fontSize: 20, color: Colors.white))),
-          Container(
-            margin: const EdgeInsets.only(right: 5),
-            child: DropdownButtonExample(id, zona),
-          )
+          Row(
+            children: [
+              id[0] == 'L'
+                  ? IconButton(
+                      onPressed: (() {}),
+                      icon: Icon(
+                        Icons.settings,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Container(),
+              Container(
+                margin: const EdgeInsets.only(right: 5),
+                child: DropdownButtonExample(id, zona),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -527,8 +554,8 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 ///
-class CrtlTv extends StatelessWidget {
-  const CrtlTv(this.id, {super.key});
+class LayoutTv extends StatelessWidget {
+  const LayoutTv(this.id, {super.key});
   final String id;
   @override
   Widget build(BuildContext context) {
@@ -539,21 +566,50 @@ class CrtlTv extends StatelessWidget {
         right: 15,
       ),
       decoration: BoxDecoration(
-          color: Colors.grey[850],
+          color: Colors.grey[700],
           borderRadius: const BorderRadius.all(Radius.circular(8))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          CtrlTvPower(),
-          CtrlTvPad(id),
+          LayoutTvPower(),
+          LayoutTvPad(id),
         ],
       ),
     );
   }
 }
 
-class CtrlTvPad extends StatelessWidget {
-  const CtrlTvPad(this.id, {super.key});
+class LayoutAire extends StatelessWidget {
+  const LayoutAire(this.id, {super.key});
+  final String id;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(
+        top: 10,
+        left: 15,
+        right: 15,
+        bottom: 15,
+      ),
+      decoration: BoxDecoration(
+          color: Colors.grey[700],
+          borderRadius: const BorderRadius.all(Radius.circular(8))),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconoAire('power'),
+          IconoAire('mode'),
+          IconoAire('T+'),
+          IconoAire('T-'),
+          IconoAire('swing'),
+        ],
+      ),
+    );
+  }
+}
+
+class LayoutTvPad extends StatelessWidget {
+  const LayoutTvPad(this.id, {super.key});
   final String id;
   @override
   Widget build(BuildContext context) {
@@ -590,8 +646,8 @@ class CtrlTvPad extends StatelessWidget {
   }
 }
 
-class CtrlTvPower extends StatelessWidget {
-  const CtrlTvPower({super.key});
+class LayoutTvPower extends StatelessWidget {
+  const LayoutTvPower({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -669,6 +725,44 @@ class IconoTv extends StatelessWidget {
         break;
       case 'source':
         icono = Icons.reset_tv;
+        break;
+      default:
+        icono = Icons.error;
+    }
+
+    return Container(
+      child: IconButton(
+        icon: Icon(icono),
+        color: Colors.white,
+        onPressed: () {},
+      ),
+    );
+  }
+}
+
+class IconoAire extends StatelessWidget {
+  const IconoAire(this.tipo, {super.key});
+  final String tipo;
+
+  @override
+  Widget build(BuildContext context) {
+    var icono;
+
+    switch (tipo) {
+      case 'power':
+        icono = Icons.power_settings_new;
+        break;
+      case 'mode':
+        icono = Icons.density_medium_outlined;
+        break;
+      case 'T+':
+        icono = Icons.arrow_upward;
+        break;
+      case 'T-':
+        icono = Icons.arrow_downward;
+        break;
+      case 'swing':
+        icono = Icons.swap_calls_outlined;
         break;
       default:
         icono = Icons.error;
