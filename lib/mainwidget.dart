@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
@@ -174,12 +175,7 @@ class Task extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        LayoutTv('L00001'),
-        LayoutAire('L00001'),
-      ],
-    );
+    return Column();
   }
 }
 
@@ -218,9 +214,12 @@ class Zona extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
+    final manager = Provider.of<MQTTManager>(context);
     int cont = 0;
     List<Widget> mods = [];
     List<Widget> grilla = []; //arreglo de row
+
+    // const String botonesharcodeado = 'b12:AA;b13:AB;b14:AC;b15:AD;b16:AE';
 
     grilla.add(Container(
         child: Text(nombrezona, style: const TextStyle(color: Colors.white))));
@@ -242,7 +241,9 @@ class Zona extends StatelessWidget {
             ));
           }
           if (i['id'][0] == 'L') {
-            grilla.add(LayoutAire(i['id']));
+            grilla.add(LayoutAire(manager, i['funcion'], i['id'], 'normal'));
+            //me aseguro de mandar el msg para que el mod este en funcionamiento normal
+            // manager.publish('/mod/${i['id']}/comandos', 'normal');
           }
         }
       }
@@ -276,8 +277,8 @@ class Zona extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(
         top: 20,
-        left: 15,
-        right: 15,
+        left: 8,
+        right: 8,
       ),
       decoration: BoxDecoration(
           color: Colors.grey[850],
@@ -444,8 +445,11 @@ class Modulo extends StatelessWidget {
   final String zona;
   const Modulo(this.id, this.zona);
 
+  static const Color grisbase = Color.fromARGB(255, 30, 30, 30);
+
   @override
   Widget build(BuildContext context) {
+    final manager = Provider.of<MQTTManager>(context);
     final estadomqtt = Provider.of<MQTTAppState>(context);
     return Container(
       height: 60,
@@ -468,7 +472,39 @@ class Modulo extends StatelessWidget {
             children: [
               id[0] == 'L'
                   ? IconButton(
-                      onPressed: (() {}),
+                      onPressed: (() {
+                        manager.publish('/mod/$id/comandos', 'configuracion');
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => WillPopScope(
+                                  onWillPop: () async {
+                                    return false;
+                                  },
+                                  child: Scaffold(
+                                    backgroundColor: Colors.black,
+                                    appBar: AppBar(
+                                      automaticallyImplyLeading: false,
+                                      leading: Builder(
+                                        builder: (BuildContext context) {
+                                          return IconButton(
+                                            icon: const Icon(Icons.arrow_back),
+                                            onPressed: () {
+                                              manager.publish(
+                                                  '/mod/$id/comandos',
+                                                  'normal');
+                                              Navigator.pop(context);
+                                            },
+                                          );
+                                        },
+                                      ),
+                                      backgroundColor: grisbase,
+                                      title: const Text('Config led'),
+                                    ),
+                                    body: Center(
+                                        child: LayoutAire(
+                                            manager, '', id, 'configuracion')),
+                                  ),
+                                )));
+                      }),
                       icon: Icon(
                         Icons.settings,
                         color: Colors.white,
@@ -555,24 +591,105 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
 /////////////////////////////////////////////////////////////////////////////////////////////
 ///
 class LayoutTv extends StatelessWidget {
-  const LayoutTv(this.id, {super.key});
-  final String id;
+  LayoutTv(this.manager, this.distbotones, this.id, this.modo, {super.key});
+  final String id, modo, distbotones;
+  MQTTManager manager;
   @override
   Widget build(BuildContext context) {
+    List<String> aux = distbotones.split(';');
+    var boton_codigo = Map();
+    boton_codigo = initMap();
+    for (var i in aux) {
+      boton_codigo.update(
+        i.split(':')[0],
+        (value) => i.split(':')[1],
+        ifAbsent: () => i.split(':')[1],
+      );
+    }
     return Container(
       margin: const EdgeInsets.only(
         top: 20,
         left: 15,
         right: 15,
+        bottom: 15,
       ),
       decoration: BoxDecoration(
           color: Colors.grey[700],
           borderRadius: const BorderRadius.all(Radius.circular(8))),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        // mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          LayoutTvPower(),
-          LayoutTvPad(id),
+          Container(
+            height: 180,
+            width: 180,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconoCtrlIR(
+                        manager, 'power', id, 'b06', modo, boton_codigo['b06']),
+                    IconoCtrlIR(manager, 'source', id, 'b07', modo,
+                        boton_codigo['b07']),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconoCtrlIR(manager, 'canal+', id, 'b08', modo,
+                        boton_codigo['b08']),
+                    IconoCtrlIR(
+                        manager, 'vol+', id, 'b09', modo, boton_codigo['b09']),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconoCtrlIR(manager, 'canal-', id, 'b10', modo,
+                        boton_codigo['b10']),
+                    IconoCtrlIR(
+                        manager, 'vol-', id, 'b11', modo, boton_codigo['b11']),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 170,
+            width: 170,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(id, style: const TextStyle(color: Colors.white)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconoCtrlIR(manager, 'arriba', id, 'b01', modo,
+                        boton_codigo['b12']),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconoCtrlIR(
+                        manager, 'izq', id, 'b02', modo, boton_codigo['b12']),
+                    IconoCtrlIR(
+                        manager, 'enter', id, 'b03', modo, boton_codigo['b12']),
+                    IconoCtrlIR(
+                        manager, 'der', id, 'b04', modo, boton_codigo['b12']),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconoCtrlIR(
+                        manager, 'abajo', id, 'b05', modo, boton_codigo['b12']),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -580,10 +697,26 @@ class LayoutTv extends StatelessWidget {
 }
 
 class LayoutAire extends StatelessWidget {
-  const LayoutAire(this.id, {super.key});
-  final String id;
+  LayoutAire(this.manager, this.distbotones, this.id, this.modo, {super.key});
+  final String id, modo, distbotones;
+  MQTTManager manager;
   @override
   Widget build(BuildContext context) {
+    final List<String> aux = distbotones.split(';');
+    var boton_codigo = Map();
+    boton_codigo = initMap();
+    if (modo == 'normal' && aux.isNotEmpty) {
+      for (var i in aux) {
+        final List<String> aux2 = i.split(':');
+        if (aux2.length > 1) {
+          boton_codigo.update(
+            i.split(':')[0],
+            (value) => i.split(':')[1],
+            ifAbsent: () => i.split(':')[1],
+          );
+        }
+      }
+    }
     return Container(
       margin: const EdgeInsets.only(
         top: 10,
@@ -595,98 +728,27 @@ class LayoutAire extends StatelessWidget {
           color: Colors.grey[700],
           borderRadius: const BorderRadius.all(Radius.circular(8))),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          IconoAire('power'),
-          IconoAire('mode'),
-          IconoAire('T+'),
-          IconoAire('T-'),
-          IconoAire('swing'),
+          IconoCtrlIR(manager, 'power', id, 'b12', modo, boton_codigo['b12']),
+          IconoCtrlIR(manager, 'mode', id, 'b13', modo, boton_codigo['b13']),
+          IconoCtrlIR(manager, 'T+', id, 'b14', modo, boton_codigo['b14']),
+          IconoCtrlIR(manager, 'T-', id, 'b15', modo, boton_codigo['b15']),
+          IconoCtrlIR(manager, 'swing', id, 'b16', modo, boton_codigo['b16']),
         ],
       ),
     );
   }
 }
 
-class LayoutTvPad extends StatelessWidget {
-  const LayoutTvPad(this.id, {super.key});
-  final String id;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 170,
-      width: 170,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(id, style: const TextStyle(color: Colors.white)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconoTv('arriba'),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconoTv('izq'),
-              IconoTv('enter'),
-              IconoTv('der'),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconoTv('abajo'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class LayoutTvPower extends StatelessWidget {
-  const LayoutTvPower({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 180,
-      width: 180,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconoTv('power'),
-              IconoTv('source'),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconoTv('canal+'),
-              IconoTv('vol+'),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconoTv('canal-'),
-              IconoTv('vol-'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class IconoTv extends StatelessWidget {
-  const IconoTv(this.tipo, {super.key});
-  final String tipo;
+class IconoCtrlIR extends StatelessWidget {
+  //el constructor recibe objeto para mandar mqtt, tipo de icono, id del modulo, modo de operacion
+  //y codigo que debe enviar cuanbdo se pulse
+  IconoCtrlIR(this.manager, this.tipo, this.idmodulo, this.idboton, this.modo,
+      this.codigo,
+      {super.key});
+  final String tipo, idmodulo, idboton, modo, codigo;
+  MQTTManager manager;
 
   @override
   Widget build(BuildContext context) {
@@ -726,32 +788,6 @@ class IconoTv extends StatelessWidget {
       case 'source':
         icono = Icons.reset_tv;
         break;
-      default:
-        icono = Icons.error;
-    }
-
-    return Container(
-      child: IconButton(
-        icon: Icon(icono),
-        color: Colors.white,
-        onPressed: () {},
-      ),
-    );
-  }
-}
-
-class IconoAire extends StatelessWidget {
-  const IconoAire(this.tipo, {super.key});
-  final String tipo;
-
-  @override
-  Widget build(BuildContext context) {
-    var icono;
-
-    switch (tipo) {
-      case 'power':
-        icono = Icons.power_settings_new;
-        break;
       case 'mode':
         icono = Icons.density_medium_outlined;
         break;
@@ -772,8 +808,40 @@ class IconoAire extends StatelessWidget {
       child: IconButton(
         icon: Icon(icono),
         color: Colors.white,
-        onPressed: () {},
+        onPressed: () {
+          if (modo == 'normal' && codigo != 'null') {
+            manager.publish(
+                '/mod/$idmodulo', int.parse(codigo, radix: 16).toString());
+
+            // print('codigo::::::::::::::::: ${int.parse(codigo, radix: 16)}');
+          }
+          if (modo == 'configuracion') {
+            manager.publish('/mod/$idmodulo', idboton);
+          }
+        },
       ),
     );
   }
+}
+
+Map initMap() {
+  var aux = {
+    'b01': 'null',
+    'b02': 'null',
+    'b03': 'null',
+    'b04': 'null',
+    'b05': 'null',
+    'b06': 'null',
+    'b07': 'null',
+    'b08': 'null',
+    'b09': 'null',
+    'b10': 'null',
+    'b11': 'null',
+    'b12': 'null',
+    'b13': 'null',
+    'b14': 'null',
+    'b15': 'null',
+    'b16': 'null',
+  };
+  return aux;
 }
