@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
@@ -63,7 +62,7 @@ class _MainWidgetState extends State<MainWidget> {
     final Widget botonflotante = FloatingActionButton(
       onPressed: (() {
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => NuevaTarea(manager, currentAppState)));
+            builder: (context) => NuevaTarea(manager, appState)));
       }),
       backgroundColor: Colors.orange,
       child: const Icon(Icons.add),
@@ -81,7 +80,6 @@ class _MainWidgetState extends State<MainWidget> {
           Icons.wifi_off,
           color: Colors.red,
         );
-        // iconosuperior = CircularProgressIndicator();
         break;
       case MQTTAppConnectionState.remote:
         iconosuperior = const Icon(
@@ -219,8 +217,6 @@ class Zona extends StatelessWidget {
     List<Widget> mods = [];
     List<Widget> grilla = []; //arreglo de row
 
-    // const String botonesharcodeado = 'b12:AA;b13:AB;b14:AC;b15:AD;b16:AE';
-
     grilla.add(Container(
         child: Text(nombrezona, style: const TextStyle(color: Colors.white))));
 
@@ -241,7 +237,7 @@ class Zona extends StatelessWidget {
             ));
           }
           if (i['id'][0] == 'L') {
-            grilla.add(LayoutAire(manager, i['funcion'], i['id'], 'normal'));
+            grilla.add(LayoutTv(manager, i['funcion'], i['id'], 'normal'));
             //me aseguro de mandar el msg para que el mod este en funcionamiento normal
             // manager.publish('/mod/${i['id']}/comandos', 'normal');
           }
@@ -500,7 +496,7 @@ class Modulo extends StatelessWidget {
                                       title: const Text('Config led'),
                                     ),
                                     body: Center(
-                                        child: LayoutAire(
+                                        child: LayoutTv(
                                             manager, '', id, 'configuracion')),
                                   ),
                                 )));
@@ -596,15 +592,20 @@ class LayoutTv extends StatelessWidget {
   MQTTManager manager;
   @override
   Widget build(BuildContext context) {
-    List<String> aux = distbotones.split(';');
+    final List<String> aux = distbotones.split(';');
     var boton_codigo = Map();
     boton_codigo = initMap();
-    for (var i in aux) {
-      boton_codigo.update(
-        i.split(':')[0],
-        (value) => i.split(':')[1],
-        ifAbsent: () => i.split(':')[1],
-      );
+    if (modo == 'normal' && aux.isNotEmpty) {
+      for (var i in aux) {
+        final List<String> aux2 = i.split(':');
+        if (aux2.length > 1) {
+          boton_codigo.update(
+            i.split(':')[0],
+            (value) => i.split(':')[1],
+            ifAbsent: () => i.split(':')[1],
+          );
+        }
+      }
     }
     return Container(
       margin: const EdgeInsets.only(
@@ -617,11 +618,11 @@ class LayoutTv extends StatelessWidget {
           color: Colors.grey[700],
           borderRadius: const BorderRadius.all(Radius.circular(8))),
       child: Row(
-        // mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
             height: 180,
-            width: 180,
+            width: 160,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -657,7 +658,7 @@ class LayoutTv extends StatelessWidget {
           ),
           Container(
             height: 170,
-            width: 170,
+            width: 160,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -812,8 +813,6 @@ class IconoCtrlIR extends StatelessWidget {
           if (modo == 'normal' && codigo != 'null') {
             manager.publish(
                 '/mod/$idmodulo', int.parse(codigo, radix: 16).toString());
-
-            // print('codigo::::::::::::::::: ${int.parse(codigo, radix: 16)}');
           }
           if (modo == 'configuracion') {
             manager.publish('/mod/$idmodulo', idboton);
@@ -845,3 +844,17 @@ Map initMap() {
   };
   return aux;
 }
+
+
+////////////////////////////////////////////////////////////////////
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///-------------------------Nueva tarea
+

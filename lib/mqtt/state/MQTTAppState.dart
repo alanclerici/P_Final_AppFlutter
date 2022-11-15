@@ -42,4 +42,153 @@ class MQTTAppState with ChangeNotifier {
       return '';
     }
   }
+
+  /////////////////////////////////////////////////////////////////////////////
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///-------------Parte de estado de NUEVA TAREA
+//-------------------------------------listas de estado actual
+  List<String> listModulos = ['Modulo', 'Tiempo'];
+
+  //borro modulos activos (data que llega de mqtt)
+  void resetModulo() {
+    listModulos = ['Modulo', 'Tiempo'];
+  }
+
+  //agrego modulo activos (data que llega de mqtt)
+  void addModulo(String modulo) {
+    listModulos.add(modulo);
+  }
+
+  //-------------------------------------estados seleccionados
+  String _moduloCausa = '',
+      _varCausa = '',
+      _tipoCausa = '',
+      _valorCausa = '',
+      _moduloEfecto = '',
+      _tipoEfecto = '',
+      _nombre = '';
+
+  //---set
+  void setmoduloCausa(String input) {
+    _moduloCausa = input;
+    print(_moduloCausa);
+    notifyListeners();
+  }
+
+  void setvarCausa(String input) {
+    _varCausa = input;
+    notifyListeners();
+  }
+
+  void settipoCausa(String input) {
+    _tipoCausa = input;
+    notifyListeners();
+  }
+
+  void setvalorCausa(String input) {
+    _valorCausa = input;
+    notifyListeners();
+  }
+
+  void setmoduloEfecto(String input) {
+    _moduloEfecto = input;
+    notifyListeners();
+  }
+
+  void settipoEfecto(String input) {
+    _tipoEfecto = input;
+    notifyListeners();
+  }
+
+  void setnombre(String input) {
+    _nombre = input;
+    notifyListeners();
+  }
+
+  //---get
+  String get getModuloCausa => _moduloCausa;
+  String get getModuloEfecto => _moduloEfecto;
+
+  List<String> getAll() {
+    return [
+      _moduloCausa,
+      _varCausa,
+      _tipoCausa,
+      _valorCausa,
+      _moduloEfecto,
+      _tipoEfecto,
+      _nombre,
+    ];
+  }
+
+  //devuelvo modulos activos (data que llega de mqtt)
+  List<String> getListModulos() {
+    return listModulos;
+  }
+
+  //segun el modulo devuelvo list de variable a utilzar como causa
+  List<String> getListVarCausa() {
+    if (_moduloCausa.isNotEmpty) {
+      switch (_moduloCausa[0]) {
+        case 'T':
+          return [
+            'Periodo',
+            'Hora exacta',
+          ];
+        case 'S':
+          return [
+            'Temp.',
+            'Hum.',
+            'Pres.',
+          ];
+        case 'M':
+          return [
+            'Detect. Mov.',
+          ];
+        default:
+          return ['tipo invalido'];
+      }
+    } else {
+      return ['pifiamo'];
+    }
+  }
+
+  //por ahora solo util para S00001
+  List<String> getListTipoCausa() {
+    if (_moduloCausa.isNotEmpty) {
+      switch (_moduloCausa[0]) {
+        case 'S':
+          return [
+            'Mayor que',
+            'Menor que',
+            'igual a',
+          ];
+        default:
+          return ['tipo invalido'];
+      }
+    } else {
+      return ['pifiamo'];
+    }
+  }
+
+  List<String> getListTipoEfecto() {
+    if (_moduloEfecto.isNotEmpty) {
+      switch (_moduloEfecto[0]) {
+        case 'R':
+          return [
+            'Encender',
+            'Apagar',
+            'Invertir',
+          ];
+        default:
+          return ['tipo invalido'];
+      }
+    } else {
+      return ['pifiamo'];
+    }
+  }
 }
