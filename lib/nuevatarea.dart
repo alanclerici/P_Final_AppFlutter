@@ -17,8 +17,13 @@ class NuevaTarea extends StatefulWidget {
 
 class _NuevaTareaState extends State<NuevaTarea> {
   @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    MQTTAppState manager = Provider.of<MQTTAppState>(context);
     widget.appState.resetModulo();
     if (widget.appState.getReceivedStatus.isNotEmpty) {
       for (var i in jsonDecode(widget.appState.getReceivedStatus)) {
