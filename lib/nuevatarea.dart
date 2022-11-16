@@ -52,8 +52,26 @@ class NuevaTarea extends StatelessWidget {
               child:
                   const Text('Efecto', style: TextStyle(color: Colors.white))),
           const RowEfecto(),
+          if (appState.getModuloEfecto.contains('R')) ...[
+            Container(
+                margin: EdgeInsets.only(top: 20),
+                child: const Text('Efecto secundario',
+                    style: TextStyle(color: Colors.white))),
+          ],
+          const RowEfectoSecundario(),
         ],
       ),
+    );
+  }
+}
+
+class GuardarCancelar extends StatelessWidget {
+  const GuardarCancelar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [],
     );
   }
 }
@@ -93,6 +111,12 @@ class _DropButtonState extends State<DropButton> {
       case 'tipoEfecto':
         list = estado.getListTipoEfecto();
         break;
+      case 'tipoSecundario':
+        list = estado.getListTipoSecundario();
+        break;
+      case 'causaSecundaria':
+        list = estado.getListCausaSecundaria();
+        break;
       default:
         list = ['no valido'];
         break;
@@ -124,31 +148,18 @@ class _DropButtonState extends State<DropButton> {
       case 'tipoEfecto':
         list = estado.getListTipoEfecto();
         break;
+      case 'tipoSecundario':
+        list = estado.getListTipoSecundario();
+        break;
+      case 'causaSecundaria':
+        list = estado.getListCausaSecundaria();
+        break;
       default:
         list = ['no valido'];
         break;
     }
     if (aux) {
       dropdownValue = list.first;
-      // switch (widget.tipo) {
-      //   case 'moduloCausa':
-      //     estado.setmoduloCausa(dropdownValue);
-      //     break;
-      //   case 'varCausa':
-      //     estado.setvarCausa(dropdownValue);
-      //     break;
-      //   case 'tipoCausa':
-      //     estado.settipoCausa(dropdownValue);
-      //     break;
-      //   case 'moduloEfecto':
-      //     estado.setmoduloEfecto(dropdownValue);
-      //     break;
-      //   case 'tipoEfecto':
-      //     estado.settipoEfecto(dropdownValue);
-      //     break;
-      //   default:
-      //     break;
-      // }
       aux = false;
     }
 
@@ -181,6 +192,12 @@ class _DropButtonState extends State<DropButton> {
               break;
             case 'tipoEfecto':
               estado.settipoEfecto(dropdownValue);
+              break;
+            case 'tipoSecundario':
+              estado.settipoSecundario(dropdownValue);
+              break;
+            case 'causaSecundaria':
+              estado.setcausaSecundaria(dropdownValue);
               break;
             default:
               break;
@@ -317,6 +334,26 @@ class RowEfecto extends StatelessWidget {
       children: [
         DropButton('moduloEfecto'),
         if (estado.getModuloEfecto.contains('R')) ...[DropButton('tipoEfecto')],
+      ],
+    );
+  }
+}
+
+class RowEfectoSecundario extends StatelessWidget {
+  const RowEfectoSecundario({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final estado = Provider.of<MQTTAppState>(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        if (estado.getModuloEfecto.contains('R')) ...[
+          DropButton('tipoSecundario')
+        ],
+        if (estado.getModuloEfecto.contains('R')) ...[
+          DropButton('causaSecundaria')
+        ],
       ],
     );
   }

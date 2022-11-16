@@ -71,7 +71,9 @@ class MQTTAppState with ChangeNotifier {
       _valorCausa = '20',
       _moduloEfecto = '',
       _tipoEfecto = '',
-      _nombre = '';
+      _nombre = '',
+      _tipoSecundario = '',
+      _causaSecundaria = '';
 
   //---set
   void setmoduloCausa(String input) {
@@ -109,6 +111,16 @@ class MQTTAppState with ChangeNotifier {
     notifyListeners();
   }
 
+  void settipoSecundario(String input) {
+    _tipoSecundario = input;
+    notifyListeners();
+  }
+
+  void setcausaSecundaria(String input) {
+    _causaSecundaria = input;
+    notifyListeners();
+  }
+
   //---get
   String get getModuloCausa => _moduloCausa;
   String get getModuloEfecto => _moduloEfecto;
@@ -139,17 +151,20 @@ class MQTTAppState with ChangeNotifier {
       switch (_moduloCausa[0]) {
         case 'T':
           return [
+            'Var.',
             'Periodo',
             'Hora exacta',
           ];
         case 'S':
           return [
+            'Var.',
             'Temp.',
             'Hum.',
             'Pres.',
           ];
         case 'M':
           return [
+            'Var.',
             'Detect. Mov.',
           ];
         default:
@@ -166,6 +181,7 @@ class MQTTAppState with ChangeNotifier {
       switch (_moduloCausa[0]) {
         case 'S':
           return [
+            'Tipo',
             'Mayor que',
             'Menor que',
             'igual a',
@@ -183,9 +199,42 @@ class MQTTAppState with ChangeNotifier {
       switch (_moduloEfecto[0]) {
         case 'R':
           return [
+            'Accion',
             'Encender',
             'Apagar',
             'Invertir',
+          ];
+        default:
+          return ['tipo invalido'];
+      }
+    } else {
+      return ['tipo invalido'];
+    }
+  }
+
+  List<String> getListTipoSecundario() {
+    if (_moduloEfecto.isNotEmpty) {
+      switch (_moduloEfecto[0]) {
+        case 'R':
+          return [
+            'Ninguno',
+            'Revertir',
+          ];
+        default:
+          return ['tipo invalido'];
+      }
+    } else {
+      return ['tipo invalido'];
+    }
+  }
+
+  List<String> getListCausaSecundaria() {
+    if (_moduloEfecto.isNotEmpty) {
+      switch (_moduloEfecto[0]) {
+        case 'R':
+          return [
+            'Tipo',
+            'Despues de',
           ];
         default:
           return ['tipo invalido'];

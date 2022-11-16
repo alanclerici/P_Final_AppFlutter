@@ -37,7 +37,7 @@ class Config extends StatelessWidget {
 class Modulo extends StatelessWidget {
   final String id;
   final String zona;
-  const Modulo(this.manager, this.id, this.zona);
+  const Modulo(this.manager, this.id, this.zona, {super.key});
   final MQTTManager manager;
 
   static const Color grisbase = Color.fromARGB(255, 30, 30, 30);
