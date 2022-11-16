@@ -15,7 +15,6 @@ class NuevaTarea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<MQTTAppState>(context);
-    // final appState = Provider.of<MQTTAppState>(context);
     appState.resetModulo();
     if (appState.getReceivedStatus.isNotEmpty) {
       for (var i in jsonDecode(appState.getReceivedStatus)) {
@@ -32,13 +31,27 @@ class NuevaTarea extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Text('Nombre', style: TextStyle(color: Colors.white)),
-          InputText(),
-          Text('Causa', style: TextStyle(color: Colors.white)),
-          RowCausa(),
-          appState.getModuloCausa.contains('S') ? SliderInput() : Container(),
-          Text('Efecto', style: TextStyle(color: Colors.white)),
-          RowEfecto(),
+          Container(
+              margin: EdgeInsets.only(top: 5),
+              child:
+                  const Text('Nombre', style: TextStyle(color: Colors.white))),
+          Container(
+            margin: EdgeInsets.only(top: 5),
+            child: const InputText(),
+          ),
+          Container(
+              margin: EdgeInsets.only(top: 20),
+              child:
+                  const Text('Causa', style: TextStyle(color: Colors.white))),
+          const RowCausa(),
+          appState.getModuloCausa.contains('S')
+              ? const SliderInput()
+              : Container(),
+          Container(
+              margin: EdgeInsets.only(top: 20),
+              child:
+                  const Text('Efecto', style: TextStyle(color: Colors.white))),
+          const RowEfecto(),
         ],
       ),
     );
@@ -57,11 +70,13 @@ class DropButton extends StatefulWidget {
 class _DropButtonState extends State<DropButton> {
   late String dropdownValue;
   late List<String> list;
+  bool aux = true;
 
   @override
-  Widget build(BuildContext context) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     final estado = Provider.of<MQTTAppState>(context);
-    ////
+
     switch (widget.tipo) {
       case 'moduloCausa':
         list = estado.getListModulos();
@@ -82,9 +97,61 @@ class _DropButtonState extends State<DropButton> {
         list = ['no valido'];
         break;
     }
-    dropdownValue = list.first;
+  }
 
-    ///
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final estado = Provider.of<MQTTAppState>(context);
+
+    switch (widget.tipo) {
+      case 'moduloCausa':
+        list = estado.getListModulos();
+        break;
+      case 'varCausa':
+        list = estado.getListVarCausa();
+        break;
+      case 'tipoCausa':
+        list = estado.getListTipoCausa();
+        break;
+      case 'moduloEfecto':
+        list = estado.getListModulos();
+        break;
+      case 'tipoEfecto':
+        list = estado.getListTipoEfecto();
+        break;
+      default:
+        list = ['no valido'];
+        break;
+    }
+    if (aux) {
+      dropdownValue = list.first;
+      // switch (widget.tipo) {
+      //   case 'moduloCausa':
+      //     estado.setmoduloCausa(dropdownValue);
+      //     break;
+      //   case 'varCausa':
+      //     estado.setvarCausa(dropdownValue);
+      //     break;
+      //   case 'tipoCausa':
+      //     estado.settipoCausa(dropdownValue);
+      //     break;
+      //   case 'moduloEfecto':
+      //     estado.setmoduloEfecto(dropdownValue);
+      //     break;
+      //   case 'tipoEfecto':
+      //     estado.settipoEfecto(dropdownValue);
+      //     break;
+      //   default:
+      //     break;
+      // }
+      aux = false;
+    }
+
     return DropdownButton<String>(
       value: dropdownValue,
       icon: const Icon(Icons.arrow_downward),
@@ -193,13 +260,48 @@ class RowCausa extends StatelessWidget {
   Widget build(BuildContext context) {
     final estado = Provider.of<MQTTAppState>(context);
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        DropButton('moduloCausa'),
-        DropButton('varCausa'),
-        estado.getModuloCausa.contains('S')
-            ? DropButton('tipoCausa')
-            : Container(),
+        const DropButton('moduloCausa'),
+        if (estado.getModuloCausa.contains('S') ||
+            estado.getModuloCausa.contains('T')) ...[
+          const DropButton('varCausa')
+        ],
+        if (estado.getModuloCausa.contains('S')) ...[
+          const DropButton('tipoCausa')
+        ],
+        if (estado.getModuloCausa.contains('S')) ...[
+          Container(
+            child: TextValorCausa(),
+          )
+        ],
       ],
+    );
+  }
+}
+
+class TextValorCausa extends StatelessWidget {
+  const TextValorCausa({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final estado = Provider.of<MQTTAppState>(context);
+    String simbolo;
+    switch (estado.getVarCausa) {
+      case 'Hum.':
+        simbolo = '%';
+        break;
+      case 'Pres.':
+        simbolo = 'HPa';
+        break;
+      default:
+        simbolo = '°C';
+        break;
+    }
+    return Text(
+      maxLines: 5,
+      '${estado.getValorCausa}$simbolo',
+      style: const TextStyle(color: Colors.white, fontSize: 16),
     );
   }
 }
@@ -209,10 +311,12 @@ class RowEfecto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estado = Provider.of<MQTTAppState>(context);
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         DropButton('moduloEfecto'),
-        DropButton('tipoEfecto'),
+        if (estado.getModuloEfecto.contains('R')) ...[DropButton('tipoEfecto')],
       ],
     );
   }
@@ -227,19 +331,39 @@ class SliderInput extends StatefulWidget {
 
 class _SliderInputState extends State<SliderInput> {
   double _currentSliderValue = 20;
+  late double min, max;
+  late int divisions;
   @override
   Widget build(BuildContext context) {
     final estado = Provider.of<MQTTAppState>(context);
+    switch (estado.getVarCausa) {
+      case 'Hum.':
+        min = 20;
+        max = 80;
+        divisions = 60;
+        _currentSliderValue = 50;
+        break;
+      case 'Pres.':
+        min = -10;
+        max = 50;
+        divisions = 60;
+        break;
+      default:
+        min = -10;
+        max = 50;
+        divisions = 60;
+        break;
+    }
     return Slider(
       value: _currentSliderValue,
-      max: 50,
-      min: -10,
-      divisions: 60,
+      max: max,
+      min: min,
+      divisions: divisions,
       label: _currentSliderValue.round().toString(),
       onChanged: (double value) {
         setState(() {
           _currentSliderValue = value;
-          estado.setvalorCausa(_currentSliderValue.toString());
+          estado.setvalorCausa(_currentSliderValue.round().toString());
         });
       },
     );

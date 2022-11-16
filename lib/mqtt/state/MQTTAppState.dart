@@ -45,16 +45,13 @@ class MQTTAppState with ChangeNotifier {
 
   /////////////////////////////////////////////////////////////
   ///
+  ///           estado new tarea
   ///
   ///
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
-  ///
+  /////////////////////////////////////////////////////////////
+
   //-------------------------------------listas de estado actual
+
   List<String> listModulos = ['Modulo', 'Tiempo'];
 
   //borro modulos activos (data que llega de mqtt)
@@ -71,7 +68,7 @@ class MQTTAppState with ChangeNotifier {
   String _moduloCausa = '',
       _varCausa = '',
       _tipoCausa = '',
-      _valorCausa = '',
+      _valorCausa = '20',
       _moduloEfecto = '',
       _tipoEfecto = '',
       _nombre = '';
@@ -115,6 +112,9 @@ class MQTTAppState with ChangeNotifier {
   //---get
   String get getModuloCausa => _moduloCausa;
   String get getModuloEfecto => _moduloEfecto;
+  String get getValorCausa => _valorCausa;
+
+  String get getVarCausa => _varCausa;
 
   List<String> getAll() {
     return [
