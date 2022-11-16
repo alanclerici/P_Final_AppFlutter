@@ -77,37 +77,37 @@ class MQTTAppState with ChangeNotifier {
       _nombre = '';
 
   //---set
-  void moduloCausa(String input) {
+  void setmoduloCausa(String input) {
     _moduloCausa = input;
     notifyListeners();
   }
 
-  void varCausa(String input) {
+  void setvarCausa(String input) {
     _varCausa = input;
     notifyListeners();
   }
 
-  void tipoCausa(String input) {
+  void settipoCausa(String input) {
     _tipoCausa = input;
     notifyListeners();
   }
 
-  void valorCausa(String input) {
+  void setvalorCausa(String input) {
     _valorCausa = input;
     notifyListeners();
   }
 
-  void moduloEfecto(String input) {
+  void setmoduloEfecto(String input) {
     _moduloEfecto = input;
     notifyListeners();
   }
 
-  void tipoEfecto(String input) {
+  void settipoEfecto(String input) {
     _tipoEfecto = input;
     notifyListeners();
   }
 
-  void nombre(String input) {
+  void setnombre(String input) {
     _nombre = input;
     notifyListeners();
   }

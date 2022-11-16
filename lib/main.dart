@@ -19,4 +19,15 @@ class MyApp extends StatelessWidget {
           child: MainWidget(),
         ));
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return MultiProvider(
+  //     providers: [
+  //       Provider<MQTTAppState>(create: (context) => MQTTAppState()),
+  //       // Provider<Model1>(create: (context) => Model1()),
+  //     ],
+  //     child: MaterialApp(title: _title, home: MainWidget()),
+  //   );
+  // }
 }
