@@ -43,14 +43,18 @@ class MQTTAppState with ChangeNotifier {
     }
   }
 
-  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
   ///
   ///
   ///
   ///
   ///
-  ///-------------Parte de estado de NUEVA TAREA
-//-------------------------------------listas de estado actual
+  ///
+  ///
+  ///
+  ///
+  ///
+  //-------------------------------------listas de estado actual
   List<String> listModulos = ['Modulo', 'Tiempo'];
 
   //borro modulos activos (data que llega de mqtt)
@@ -73,38 +77,37 @@ class MQTTAppState with ChangeNotifier {
       _nombre = '';
 
   //---set
-  void setmoduloCausa(String input) {
+  void moduloCausa(String input) {
     _moduloCausa = input;
-    print(_moduloCausa);
     notifyListeners();
   }
 
-  void setvarCausa(String input) {
+  void varCausa(String input) {
     _varCausa = input;
     notifyListeners();
   }
 
-  void settipoCausa(String input) {
+  void tipoCausa(String input) {
     _tipoCausa = input;
     notifyListeners();
   }
 
-  void setvalorCausa(String input) {
+  void valorCausa(String input) {
     _valorCausa = input;
     notifyListeners();
   }
 
-  void setmoduloEfecto(String input) {
+  void moduloEfecto(String input) {
     _moduloEfecto = input;
     notifyListeners();
   }
 
-  void settipoEfecto(String input) {
+  void tipoEfecto(String input) {
     _tipoEfecto = input;
     notifyListeners();
   }
 
-  void setnombre(String input) {
+  void nombre(String input) {
     _nombre = input;
     notifyListeners();
   }
@@ -153,7 +156,7 @@ class MQTTAppState with ChangeNotifier {
           return ['tipo invalido'];
       }
     } else {
-      return ['pifiamo'];
+      return ['tipo invalido'];
     }
   }
 
@@ -171,7 +174,7 @@ class MQTTAppState with ChangeNotifier {
           return ['tipo invalido'];
       }
     } else {
-      return ['pifiamo'];
+      return ['tipo invalido'];
     }
   }
 
@@ -188,7 +191,7 @@ class MQTTAppState with ChangeNotifier {
           return ['tipo invalido'];
       }
     } else {
-      return ['pifiamo'];
+      return ['tipo invalido'];
     }
   }
 }

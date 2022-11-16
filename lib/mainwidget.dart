@@ -61,8 +61,8 @@ class _MainWidgetState extends State<MainWidget> {
 
     final Widget botonflotante = FloatingActionButton(
       onPressed: (() {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => NuevaTarea(manager, appState)));
+        // Navigator.of(context).push(MaterialPageRoute(
+        //     builder: (context) => NuevaTarea(manager, appState)));
       }),
       backgroundColor: Colors.orange,
       child: const Icon(Icons.add),
@@ -844,17 +844,3 @@ Map initMap() {
   };
   return aux;
 }
-
-
-////////////////////////////////////////////////////////////////////
-///
-///
-///
-///
-///
-///
-///
-///
-///
-///-------------------------Nueva tarea
-
