@@ -59,7 +59,7 @@ class NuevaTarea extends StatelessWidget {
           const RowEfectoSecundario(),
           Container(
             margin: const EdgeInsets.only(top: 50),
-            child: const GuardarCancelar(),
+            child: GuardarCancelar(manager),
           )
         ],
       ),
@@ -68,31 +68,51 @@ class NuevaTarea extends StatelessWidget {
 }
 
 class GuardarCancelar extends StatelessWidget {
-  const GuardarCancelar({super.key});
+  GuardarCancelar(this.manager, {super.key});
+  MQTTManager manager;
 
   @override
   Widget build(BuildContext context) {
+    final estado = Provider.of<MQTTAppState>(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
           color: grisbase,
           child: TextButton(
-              onPressed: () {},
+              onPressed: () {
+                estado.resetAll();
+                Navigator.pop(context);
+              },
               child: Text(
                 'Cancelar',
                 style: TextStyle(color: Colors.white),
               )),
         ),
         SizedBox(
-          width: 20,
+          width: 60,
         ),
         Container(
           color: grisbase,
           child: TextButton(
-              onPressed: () {},
+              onPressed: () {
+                final List<String> data = estado.getAll();
+                //trama: nombre/modulo;var;comparacion-valor/modulo;tipo/tipo;causa
+                //no pueden ser vacio: nombre,ambos modulos, ambos tipos (causa y efecto)
+                if (data[0].isNotEmpty &&
+                    data[1].isNotEmpty &&
+                    data[2].isNotEmpty &&
+                    data[5].isNotEmpty &&
+                    data[6].isNotEmpty) {
+                  final String msg =
+                      '${data[0]}/${data[1]};${data[2]};${data[3]}-${data[4]}/${data[5]};${data[6]}/${data[7]};${data[8]}';
+                  manager.publish('/task/nueva', msg);
+                }
+                estado.resetAll();
+                Navigator.pop(context);
+              },
               child: Text(
-                'guardar',
+                'Guardar',
                 style: TextStyle(color: Colors.white),
               )),
         )
@@ -469,42 +489,5 @@ class _InputTimeState extends State<InputTime> {
             }
           },
         )));
-  }
-}
-
-class MyStatefulWidget extends StatefulWidget {
-  const MyStatefulWidget({super.key});
-
-  @override
-  State<MyStatefulWidget> createState() => _MyStatefulWidgetState();
-}
-
-class _MyStatefulWidgetState extends State<MyStatefulWidget> {
-  bool isChecked = false;
-
-  @override
-  Widget build(BuildContext context) {
-    Color getColor(Set<MaterialState> states) {
-      const Set<MaterialState> interactiveStates = <MaterialState>{
-        MaterialState.pressed,
-        MaterialState.hovered,
-        MaterialState.focused,
-      };
-      if (states.any(interactiveStates.contains)) {
-        return Colors.blue;
-      }
-      return Colors.orange;
-    }
-
-    return Checkbox(
-      checkColor: Colors.white,
-      fillColor: MaterialStateProperty.resolveWith(getColor),
-      value: isChecked,
-      onChanged: (bool? value) {
-        setState(() {
-          isChecked = value!;
-        });
-      },
-    );
   }
 }

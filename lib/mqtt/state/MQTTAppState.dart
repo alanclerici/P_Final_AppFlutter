@@ -144,13 +144,15 @@ class MQTTAppState with ChangeNotifier {
 
   List<String> getAll() {
     return [
-      _moduloCausa,
-      _varCausa,
-      _tipoCausa,
-      _valorCausa,
-      _moduloEfecto,
-      _tipoEfecto,
-      _nombre,
+      _nombre, //nombre de la tarea [0]
+      _moduloCausa, //tipo de modulo para la causa [1]
+      _varCausa, //variable-tipo para la causa [2]
+      _tipoCausa, //tipo de comparacion [3]
+      _valorCausa, //valor para causa [4]
+      _moduloEfecto, //tipo de modulo para el efecto [5]
+      _tipoEfecto, //tipo de efecto [6]
+      _tipoSecundario, //tipo de efecto secundario [7]
+      _causaSecundaria, //causa que lo genera [8]
     ];
   }
 
