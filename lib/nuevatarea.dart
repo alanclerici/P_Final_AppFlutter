@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinbox/flutter_spinbox.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
@@ -28,7 +29,7 @@ class NuevaTarea extends StatelessWidget {
         backgroundColor: grisbase,
         title: const Text("Nueva tarea"),
       ),
-      body: Column(
+      body: ListView(
         children: [
           Container(
               margin: const EdgeInsets.only(top: 5),
@@ -44,7 +45,10 @@ class NuevaTarea extends StatelessWidget {
                   const Text('Causa', style: TextStyle(color: Colors.white))),
           const RowCausa(),
           if (appState.getModuloCausa.contains('S')) ...[const SliderInput()],
-          if (appState.getModuloCausa.contains('Ti')) ...[InputTime()],
+          if (appState.getModuloCausa.contains('Ti') &&
+              appState.getVarCausa.contains('Hora')) ...[InputTime()],
+          if (appState.getModuloCausa.contains('Ti') &&
+              appState.getVarCausa.contains('Per')) ...[InputPeriodo('causa')],
           Container(
               margin: const EdgeInsets.only(top: 20),
               child:
@@ -57,8 +61,11 @@ class NuevaTarea extends StatelessWidget {
                     style: TextStyle(color: Colors.white))),
           ],
           const RowEfectoSecundario(),
+          if (appState.getCausaSecundaria.contains('Desp')) ...[
+            InputPeriodo('secundario')
+          ],
           Container(
-            margin: const EdgeInsets.only(top: 50),
+            margin: const EdgeInsets.only(top: 20),
             child: GuardarCancelar(manager),
           )
         ],
@@ -98,18 +105,18 @@ class GuardarCancelar extends StatelessWidget {
               onPressed: () {
                 final List<String> data = estado.getAll();
                 //trama: nombre/modulo;var;comparacion-valor/modulo;tipo/tipo;causa
-                //no pueden ser vacio: nombre,ambos modulos, ambos tipos (causa y efecto)
+                //no pueden ser vacio: nombre,ambos modulos, ambos tipos (causa y efecto),valor secundario
                 if (data[0].isNotEmpty &&
                     data[1].isNotEmpty &&
                     data[2].isNotEmpty &&
                     data[5].isNotEmpty &&
                     data[6].isNotEmpty) {
                   final String msg =
-                      '${data[0]}/${data[1]};${data[2]};${data[3]}-${data[4]}/${data[5]};${data[6]}/${data[7]};${data[8]}';
+                      '${data[0]}/${data[1]};${data[2]};${data[3]}-${data[4]}/${data[5]};${data[6]}/${data[7]};${data[8]};${data[9]}';
                   manager.publish('/task/nueva', msg);
+                  estado.resetAll();
+                  Navigator.pop(context);
                 }
-                estado.resetAll();
-                Navigator.pop(context);
               },
               child: Text(
                 'Guardar',
@@ -489,5 +496,61 @@ class _InputTimeState extends State<InputTime> {
             }
           },
         )));
+  }
+}
+
+class InputPeriodo extends StatefulWidget {
+  const InputPeriodo(this.tipo, {super.key});
+  final String tipo;
+
+  @override
+  State<InputPeriodo> createState() => _InputPeriodoState();
+}
+
+class _InputPeriodoState extends State<InputPeriodo> {
+  double min = 1, hora = 0;
+  @override
+  Widget build(BuildContext context) {
+    final estado = Provider.of<MQTTAppState>(context);
+    return Container(
+      child: Column(
+        children: [
+          SpinBox(
+            min: 0,
+            max: 100,
+            value: 1,
+            onChanged: (value) {
+              hora = value;
+              if (widget.tipo == 'causa') {
+                estado.setvalorCausa('$hora:$min');
+              } else {
+                estado.setvalorSecundario('$hora:$min');
+              }
+            },
+            decoration: InputDecoration(
+                labelText: 'Horas', labelStyle: TextStyle(color: Colors.white)),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          SpinBox(
+            min: 0,
+            max: 24,
+            value: 0,
+            onChanged: (value) {
+              min = value;
+              if (widget.tipo == 'causa') {
+                estado.setvalorCausa('$hora:$min');
+              } else {
+                estado.setvalorSecundario('$hora:$min');
+              }
+            },
+            decoration: InputDecoration(
+                labelText: 'Minutos',
+                labelStyle: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -74,6 +74,7 @@ class MQTTAppState with ChangeNotifier {
     _nombre = '';
     _tipoSecundario = 'Ninguno';
     _causaSecundaria = '';
+    _valorSecundario = '';
   }
 
   //-------------------------------------estados seleccionados
@@ -85,7 +86,8 @@ class MQTTAppState with ChangeNotifier {
       _tipoEfecto = '',
       _nombre = '',
       _tipoSecundario = 'Ninguno',
-      _causaSecundaria = '';
+      _causaSecundaria = '',
+      _valorSecundario = '';
 
   //---set
   void setmoduloCausa(String input) {
@@ -133,6 +135,11 @@ class MQTTAppState with ChangeNotifier {
     notifyListeners();
   }
 
+  void setvalorSecundario(String input) {
+    _valorSecundario = input;
+    notifyListeners();
+  }
+
   //---get
   String get getModuloCausa => _moduloCausa;
   String get getModuloEfecto => _moduloEfecto;
@@ -153,6 +160,7 @@ class MQTTAppState with ChangeNotifier {
       _tipoEfecto, //tipo de efecto [6]
       _tipoSecundario, //tipo de efecto secundario [7]
       _causaSecundaria, //causa que lo genera [8]
+      _valorSecundario //valor de la causa secundaria [9]
     ];
   }
 
