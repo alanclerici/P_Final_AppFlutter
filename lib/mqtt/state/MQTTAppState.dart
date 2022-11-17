@@ -64,6 +64,18 @@ class MQTTAppState with ChangeNotifier {
     listModulos.add(modulo);
   }
 
+  void resetAll() {
+    _moduloCausa = '';
+    _varCausa = '';
+    _tipoCausa = '';
+    _valorCausa = '20';
+    _moduloEfecto = '';
+    _tipoEfecto = '';
+    _nombre = '';
+    _tipoSecundario = 'Ninguno';
+    _causaSecundaria = '';
+  }
+
   //-------------------------------------estados seleccionados
   String _moduloCausa = '',
       _varCausa = '',
@@ -72,7 +84,7 @@ class MQTTAppState with ChangeNotifier {
       _moduloEfecto = '',
       _tipoEfecto = '',
       _nombre = '',
-      _tipoSecundario = '',
+      _tipoSecundario = 'Ninguno',
       _causaSecundaria = '';
 
   //---set
@@ -127,6 +139,8 @@ class MQTTAppState with ChangeNotifier {
   String get getValorCausa => _valorCausa;
 
   String get getVarCausa => _varCausa;
+  String get getCausaSecundaria => _causaSecundaria;
+  String get getTipoSecundario => _tipoSecundario;
 
   List<String> getAll() {
     return [
@@ -160,7 +174,6 @@ class MQTTAppState with ChangeNotifier {
             'Var.',
             'Temp.',
             'Hum.',
-            'Pres.',
           ];
         case 'M':
           return [
@@ -233,7 +246,7 @@ class MQTTAppState with ChangeNotifier {
       switch (_moduloEfecto[0]) {
         case 'R':
           return [
-            'Tipo',
+            'Causa',
             'Despues de',
           ];
         default:

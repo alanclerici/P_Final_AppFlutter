@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
+import 'package:intl/intl.dart';
 
-// final appState = Provider.of<MQTTAppState>(context);
-
-const Color grisbase = Color.fromARGB(255, 30, 30, 30);
+const Color grisbase = Color.fromARGB(255, 50, 50, 50);
 
 class NuevaTarea extends StatelessWidget {
   NuevaTarea(this.manager, {super.key});
@@ -32,33 +31,36 @@ class NuevaTarea extends StatelessWidget {
       body: Column(
         children: [
           Container(
-              margin: EdgeInsets.only(top: 5),
+              margin: const EdgeInsets.only(top: 5),
               child:
                   const Text('Nombre', style: TextStyle(color: Colors.white))),
           Container(
-            margin: EdgeInsets.only(top: 5),
+            margin: const EdgeInsets.only(top: 5),
             child: const InputText(),
           ),
           Container(
-              margin: EdgeInsets.only(top: 20),
+              margin: const EdgeInsets.only(top: 20),
               child:
                   const Text('Causa', style: TextStyle(color: Colors.white))),
           const RowCausa(),
-          appState.getModuloCausa.contains('S')
-              ? const SliderInput()
-              : Container(),
+          if (appState.getModuloCausa.contains('S')) ...[const SliderInput()],
+          if (appState.getModuloCausa.contains('Ti')) ...[InputTime()],
           Container(
-              margin: EdgeInsets.only(top: 20),
+              margin: const EdgeInsets.only(top: 20),
               child:
                   const Text('Efecto', style: TextStyle(color: Colors.white))),
           const RowEfecto(),
           if (appState.getModuloEfecto.contains('R')) ...[
             Container(
-                margin: EdgeInsets.only(top: 20),
+                margin: const EdgeInsets.only(top: 20),
                 child: const Text('Efecto secundario',
                     style: TextStyle(color: Colors.white))),
           ],
           const RowEfectoSecundario(),
+          Container(
+            margin: const EdgeInsets.only(top: 50),
+            child: const GuardarCancelar(),
+          )
         ],
       ),
     );
@@ -71,7 +73,30 @@ class GuardarCancelar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: [],
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          color: grisbase,
+          child: TextButton(
+              onPressed: () {},
+              child: Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.white),
+              )),
+        ),
+        SizedBox(
+          width: 20,
+        ),
+        Container(
+          color: grisbase,
+          child: TextButton(
+              onPressed: () {},
+              child: Text(
+                'guardar',
+                style: TextStyle(color: Colors.white),
+              )),
+        )
+      ],
     );
   }
 }
@@ -232,6 +257,7 @@ class _InputTextState extends State<InputText> {
 
   @override
   Widget build(BuildContext context) {
+    final estado = Provider.of<MQTTAppState>(context);
     return TextField(
       cursorColor: Colors.black,
       style: const TextStyle(color: Colors.black),
@@ -244,27 +270,8 @@ class _InputTextState extends State<InputText> {
           hintText: 'insertar nombre',
           hintStyle: const TextStyle(color: Colors.black)),
       controller: _controller,
-      onSubmitted: (String valuet) async {
-        await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Thanks!'),
-              content: Text(
-                  'You typed "$valuet", which has length ${valuet.characters.length}.'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    'OK',
-                  ),
-                ),
-              ],
-            );
-          },
-        );
+      onSubmitted: (String valuet) {
+        estado.setnombre(valuet);
       },
     );
   }
@@ -287,11 +294,7 @@ class RowCausa extends StatelessWidget {
         if (estado.getModuloCausa.contains('S')) ...[
           const DropButton('tipoCausa')
         ],
-        if (estado.getModuloCausa.contains('S')) ...[
-          Container(
-            child: TextValorCausa(),
-          )
-        ],
+        if (estado.getModuloCausa.contains('S')) ...[TextValorCausa()],
       ],
     );
   }
@@ -307,9 +310,6 @@ class TextValorCausa extends StatelessWidget {
     switch (estado.getVarCausa) {
       case 'Hum.':
         simbolo = '%';
-        break;
-      case 'Pres.':
-        simbolo = 'HPa';
         break;
       default:
         simbolo = '°C';
@@ -351,7 +351,8 @@ class RowEfectoSecundario extends StatelessWidget {
         if (estado.getModuloEfecto.contains('R')) ...[
           DropButton('tipoSecundario')
         ],
-        if (estado.getModuloEfecto.contains('R')) ...[
+        if (estado.getModuloEfecto.contains('R') &&
+            estado.getTipoSecundario != 'Ninguno') ...[
           DropButton('causaSecundaria')
         ],
       ],
@@ -380,11 +381,6 @@ class _SliderInputState extends State<SliderInput> {
         divisions = 60;
         _currentSliderValue = 50;
         break;
-      case 'Pres.':
-        min = -10;
-        max = 50;
-        divisions = 60;
-        break;
       default:
         min = -10;
         max = 50;
@@ -392,6 +388,7 @@ class _SliderInputState extends State<SliderInput> {
         break;
     }
     return Slider(
+      activeColor: Colors.orange,
       value: _currentSliderValue,
       max: max,
       min: min,
@@ -401,6 +398,111 @@ class _SliderInputState extends State<SliderInput> {
         setState(() {
           _currentSliderValue = value;
           estado.setvalorCausa(_currentSliderValue.round().toString());
+        });
+      },
+    );
+  }
+}
+
+class InputTime extends StatefulWidget {
+  const InputTime({super.key});
+
+  @override
+  State<InputTime> createState() => _InputTimeState();
+}
+
+class _InputTimeState extends State<InputTime> {
+  TextEditingController timeinput = TextEditingController();
+  @override
+  void initState() {
+    timeinput.text = "Ingresar hora"; //set the initial value of text field
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String etiqueta = 'Ingresar tiempo';
+    final estado = Provider.of<MQTTAppState>(context);
+    return Container(
+        padding: EdgeInsets.all(15),
+        width: 250,
+        child: Center(
+            child: TextField(
+          style: TextStyle(color: Colors.black),
+          controller: timeinput, //editing controller of this TextField
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(50)),
+            filled: true,
+            fillColor: Colors.grey,
+            icon: Icon(Icons.timer, color: Colors.grey), //icon of text field
+            // labelText: etiqueta //label text of field
+          ),
+          readOnly: true, //set it true, so that user will not able to edit text
+          onTap: () async {
+            TimeOfDay? pickedTime = await showTimePicker(
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: ColorScheme.dark(
+                      primary: Colors.orange, // <-- SEE HERE
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+              initialTime: TimeOfDay.now(),
+              context: context,
+            );
+            if (pickedTime != null) {
+              DateTime parsedTime =
+                  DateFormat.jm().parse(pickedTime.format(context).toString());
+              String formattedTime = DateFormat('HH:mm:ss').format(parsedTime);
+              setState(() {
+                formattedTime =
+                    '${formattedTime.split(':')[0]}:${formattedTime.split(':')[1]}';
+                print(formattedTime);
+                timeinput.text = formattedTime;
+                estado.setvalorCausa(formattedTime);
+              });
+            }
+          },
+        )));
+  }
+}
+
+class MyStatefulWidget extends StatefulWidget {
+  const MyStatefulWidget({super.key});
+
+  @override
+  State<MyStatefulWidget> createState() => _MyStatefulWidgetState();
+}
+
+class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+  bool isChecked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    Color getColor(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return Colors.blue;
+      }
+      return Colors.orange;
+    }
+
+    return Checkbox(
+      checkColor: Colors.white,
+      fillColor: MaterialStateProperty.resolveWith(getColor),
+      value: isChecked,
+      onChanged: (bool? value) {
+        setState(() {
+          isChecked = value!;
         });
       },
     );
