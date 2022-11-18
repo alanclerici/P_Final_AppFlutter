@@ -6,6 +6,7 @@ class MQTTAppState with ChangeNotifier {
   MQTTAppConnectionState _appConnectionState =
       MQTTAppConnectionState.disconnected;
   String _receivedStatus = '';
+  String _receivedTask = '';
   // String _msg = '';
   // String _topic = '';
 
@@ -14,6 +15,12 @@ class MQTTAppState with ChangeNotifier {
   //leo el json con la data de todos los modulos
   void setReceivedStatus(String msgstatus) {
     _receivedStatus = msgstatus;
+    notifyListeners();
+  }
+
+  //leo el json con la data de las tareas
+  void setReceivedTask(String msgstatus) {
+    _receivedTask = msgstatus;
     notifyListeners();
   }
 
@@ -32,6 +39,7 @@ class MQTTAppState with ChangeNotifier {
   }
 
   String get getReceivedStatus => _receivedStatus;
+  String get getReceivedTask => _receivedTask;
   // List<String> get getReceivedMsg => [_topic, _msg];
   MQTTAppConnectionState get getAppConnectionState => _appConnectionState;
 

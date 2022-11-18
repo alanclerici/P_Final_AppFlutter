@@ -97,7 +97,7 @@ class _MainWidgetState extends State<MainWidget> {
         );
     }
 
-    List<Widget> _vistas = [Home(manager), Task(manager), Config(manager)];
+    List<Widget> vistas = [Home(manager), Task(manager), Config(manager)];
 
     return Scaffold(
       floatingActionButton: _selectedIndex == 1 ? botonflotante : null,
@@ -105,18 +105,19 @@ class _MainWidgetState extends State<MainWidget> {
       appBar: AppBar(
         actions: <Widget>[
           IconButton(
-              onPressed: () {
-                if (currentAppState.getAppConnectionState ==
-                    MQTTAppConnectionState.disconnected) {
-                  _configureAndConnect();
-                }
-              },
-              icon: iconosuperior)
+            onPressed: () {
+              if (currentAppState.getAppConnectionState ==
+                  MQTTAppConnectionState.disconnected) {
+                _configureAndConnect();
+              }
+            },
+            icon: iconosuperior,
+          )
         ],
         backgroundColor: grisbase,
         title: const Text('Smart Home'),
       ),
-      body: _vistas[_selectedIndex],
+      body: vistas[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: grisbase,
         items: const <BottomNavigationBarItem>[

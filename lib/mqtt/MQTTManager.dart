@@ -98,6 +98,8 @@ class MQTTManager {
 
       if (c[0].topic.toString() == '/mod/modsactivos') {
         _currentState.setReceivedStatus(msg);
+      } else if (c[0].topic.toString() == '/mod/tareasactivas') {
+        _currentState.setReceivedTask(msg);
       } else {
         _currentState.setReceivedMsg(c[0].topic.toString(), msg.toString());
       }
