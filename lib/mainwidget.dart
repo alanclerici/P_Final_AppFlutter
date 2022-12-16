@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_home/datoDB.dart';
+import 'package:smart_home/db.dart';
+import 'package:smart_home/login.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
 import 'package:smart_home/nuevatarea.dart';
@@ -16,7 +19,7 @@ class MainWidget extends StatefulWidget {
 
 class _MainWidgetState extends State<MainWidget> {
   List<dynamic> listamodulos = [];
-
+  List<DatoDB> datoDB = [];
   late MQTTAppState currentAppState;
   MQTTManager manager = MQTTManager();
 
@@ -33,9 +36,20 @@ class _MainWidgetState extends State<MainWidget> {
         'app',
         currentAppState,
       );
-      _configureAndConnect();
+
+      Db.instance.getAllItems().then((value) {
+        datoDB = value;
+        if (datoDB.isNotEmpty) {
+          // textoinicial = datoDB[0].toMap()['clave'];
+          print(datoDB[0].toMap()['clave']);
+          manager.initializeMQTTClient('aplicacion');
+          manager.connect();
+        }
+      });
+
+      // manager.initializeMQTTClient('aplicacion');
+      // manager.connect();
     });
-    //-------------------
   }
 
   @override
@@ -99,60 +113,56 @@ class _MainWidgetState extends State<MainWidget> {
 
     List<Widget> vistas = [Home(manager), Task(manager), Config(manager)];
 
-    return Scaffold(
-      floatingActionButton: _selectedIndex == 1 ? botonflotante : null,
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        actions: <Widget>[
-          IconButton(
-            onPressed: () {
-              if (currentAppState.getAppConnectionState ==
-                  MQTTAppConnectionState.disconnected) {
-                _configureAndConnect();
-              }
-            },
-            icon: iconosuperior,
-          )
-        ],
-        backgroundColor: grisbase,
-        title: const Text('Smart Home'),
-      ),
-      body: vistas[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: grisbase,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.task_outlined),
-            label: 'task',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'config',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
-      ),
-    );
-  }
-
-  void _configureAndConnect() {
-    manager.initializeMQTTClient();
-    manager.connect();
+    return FutureBuilder(
+        future: Db.instance.getAllItems(),
+        builder: (BuildContext context, AsyncSnapshot<List<DatoDB>> snapshot) {
+          if (snapshot.hasData) {
+            datoDB = snapshot.data!;
+            if (datoDB.isNotEmpty) {
+              // textoinicial = datoDB[0].toMap()['clave'];
+              print(datoDB[0].toMap()['clave']);
+            }
+          }
+          return Scaffold(
+            floatingActionButton: _selectedIndex == 1 ? botonflotante : null,
+            backgroundColor: Colors.black,
+            appBar: AppBar(
+              actions: <Widget>[
+                IconButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) =>
+                            ChangeNotifierProvider<MQTTAppState>.value(
+                                value: appState, child: Login(manager))));
+                  },
+                  icon: iconosuperior,
+                )
+              ],
+              backgroundColor: grisbase,
+              title: const Text('Smart Home'),
+            ),
+            body: vistas[_selectedIndex],
+            bottomNavigationBar: BottomNavigationBar(
+              backgroundColor: grisbase,
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.task_outlined),
+                  label: 'task',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  label: 'config',
+                ),
+              ],
+              currentIndex: _selectedIndex,
+              selectedItemColor: Colors.amber[800],
+              onTap: _onItemTapped,
+            ),
+          );
+        });
   }
 }
-
-
-/////////////////////////////////////////////////
-///
-///
-///           nueva tarea
-/// 
-/// 
-///  /////////////////////////////////////////////
-

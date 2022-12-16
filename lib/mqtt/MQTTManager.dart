@@ -9,6 +9,7 @@ class MQTTManager {
   String _identifier = '';
   String _host = '';
   String _topic = '';
+  // String _clave = '';
 
   // Constructor
   // ignore: sort_constructors_first
@@ -20,7 +21,7 @@ class MQTTManager {
     _currentState = state;
   }
 
-  void initializeMQTTClient() {
+  void initializeMQTTClient(String clave) {
     _client = MqttServerClient(_host, _identifier);
     _client!.port = 1883;
     _client!.keepAlivePeriod = 20;
@@ -38,7 +39,8 @@ class MQTTManager {
             'willtopic') // If you set this you must set a will message
         .withWillMessage('My Will message')
         .startClean() // Non persistent session for testing
-        .withWillQos(MqttQos.atLeastOnce);
+        .withWillQos(MqttQos.atLeastOnce)
+        .authenticateAs("aplicacion", clave);
     // print('EXAMPLE::Mosquitto client connecting....');
     _client!.connectionMessage = connMess;
   }
