@@ -40,15 +40,10 @@ class _MainWidgetState extends State<MainWidget> {
       Db.instance.getAllItems().then((value) {
         datoDB = value;
         if (datoDB.isNotEmpty) {
-          // textoinicial = datoDB[0].toMap()['clave'];
-          print(datoDB[0].toMap()['clave']);
-          manager.initializeMQTTClient('aplicacion');
+          manager.initializeMQTTClient(datoDB[0].toMap()['clave']);
           manager.connect();
         }
       });
-
-      // manager.initializeMQTTClient('aplicacion');
-      // manager.connect();
     });
   }
 
@@ -113,56 +108,45 @@ class _MainWidgetState extends State<MainWidget> {
 
     List<Widget> vistas = [Home(manager), Task(manager), Config(manager)];
 
-    return FutureBuilder(
-        future: Db.instance.getAllItems(),
-        builder: (BuildContext context, AsyncSnapshot<List<DatoDB>> snapshot) {
-          if (snapshot.hasData) {
-            datoDB = snapshot.data!;
-            if (datoDB.isNotEmpty) {
-              // textoinicial = datoDB[0].toMap()['clave'];
-              print(datoDB[0].toMap()['clave']);
-            }
-          }
-          return Scaffold(
-            floatingActionButton: _selectedIndex == 1 ? botonflotante : null,
-            backgroundColor: Colors.black,
-            appBar: AppBar(
-              actions: <Widget>[
-                IconButton(
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) =>
-                            ChangeNotifierProvider<MQTTAppState>.value(
-                                value: appState, child: Login(manager))));
-                  },
-                  icon: iconosuperior,
-                )
-              ],
-              backgroundColor: grisbase,
-              title: const Text('Smart Home'),
-            ),
-            body: vistas[_selectedIndex],
-            bottomNavigationBar: BottomNavigationBar(
-              backgroundColor: grisbase,
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.task_outlined),
-                  label: 'task',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.settings),
-                  label: 'config',
-                ),
-              ],
-              currentIndex: _selectedIndex,
-              selectedItemColor: Colors.amber[800],
-              onTap: _onItemTapped,
-            ),
-          );
-        });
+    return Scaffold(
+      floatingActionButton: _selectedIndex == 1 ? botonflotante : null,
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      ChangeNotifierProvider<MQTTAppState>.value(
+                          value: appState, child: Login(manager))));
+            },
+            icon: iconosuperior,
+          )
+        ],
+        backgroundColor: grisbase,
+        title: const Text('Smart Home'),
+      ),
+      body: vistas[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: grisbase,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.task_outlined),
+            label: 'task',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'config',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
+    );
   }
 }
