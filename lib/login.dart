@@ -1,7 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_home/datoDB.dart';
 import 'package:smart_home/db.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 const Color grisbase = Color.fromARGB(255, 50, 50, 50);
 
@@ -21,6 +23,7 @@ class Login extends StatelessWidget {
         child: Column(
           children: [
             LocalLogin(manager),
+            RemoteLogin(),
           ],
         ),
       ),
@@ -64,7 +67,7 @@ class _LocalLoginState extends State<LocalLogin> {
           }
           return Column(
             children: [
-              Text(
+              const Text(
                 'Clave',
                 style: TextStyle(color: Colors.white),
               ),
@@ -91,7 +94,7 @@ class _LocalLoginState extends State<LocalLogin> {
                   widget.manager.initializeMQTTClient(_controller.text);
                   widget.manager.connect();
                 },
-                child: Text(
+                child: const Text(
                   'Conectar',
                   style: TextStyle(color: Colors.white),
                 ),
@@ -110,8 +113,81 @@ class RemoteLogin extends StatefulWidget {
 }
 
 class _RemoteLoginState extends State<RemoteLogin> {
+  late TextEditingController _controllerUser, _controllerPasw;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllerUser = TextEditingController();
+    _controllerPasw = TextEditingController();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    /////
+    final dbfirebase = FirebaseFirestore.instance;
+    final doc = dbfirebase.doc('/test/S9sdvpACwomZZOALTnus');
+
+    ///
+    return Column(
+      children: [
+        const Text(
+          'Acceso remoto',
+          style: TextStyle(color: Colors.white),
+        ),
+        TextField(
+          cursorColor: Colors.black,
+          style: const TextStyle(color: Colors.black),
+          decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.grey,
+              border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(40)),
+              hintText: 'Usuario',
+              hintStyle: const TextStyle(color: Colors.black)),
+          controller: _controllerUser,
+          onSubmitted: (String valuet) {
+            // textoescrito = valuet;
+          },
+        ),
+        TextField(
+          cursorColor: Colors.black,
+          style: const TextStyle(color: Colors.black),
+          decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.grey,
+              border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(40)),
+              hintText: 'Contrasenia',
+              hintStyle: const TextStyle(color: Colors.black)),
+          controller: _controllerPasw,
+          onSubmitted: (String valuet) {
+            // textoescrito = valuet;
+          },
+        ),
+        TextButton(
+          onPressed: () {},
+          child: const Text(
+            'Conectar',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: doc.snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const CircularProgressIndicator();
+            } else {
+              return Text(
+                snapshot.data!['mensaje'] ?? 'sin data',
+                style: TextStyle(color: Colors.white),
+              );
+            }
+          },
+        )
+      ],
+    );
   }
 }
