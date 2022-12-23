@@ -1,10 +1,18 @@
 import 'package:flutter/cupertino.dart';
+/////////////////////////////////////////////////////////////
+///
+///           estado mqtt
+///
+/////////////////////////////////////////////////////////////
 
-enum MQTTAppConnectionState { local, remote, disconnected, connecting }
+enum MQTTAppConnectionState { conected, disconnected, connecting }
+
+enum RemoteConnectionState { conected, disconnected, connecting }
 
 class MQTTAppState with ChangeNotifier {
   MQTTAppConnectionState _appConnectionState =
       MQTTAppConnectionState.disconnected;
+  RemoteConnectionState _remoteConnectionState = RemoteConnectionState.conected;
   String _receivedStatus = '';
   String _receivedTask = '';
   // String _msg = '';
@@ -29,6 +37,11 @@ class MQTTAppState with ChangeNotifier {
     notifyListeners();
   }
 
+  void setRemoteConnectionState(RemoteConnectionState state) {
+    _remoteConnectionState = state;
+    notifyListeners();
+  }
+
   //todos los mensajes menos los de status
   void setReceivedMsg(String topico, String mensaje) {
     // _msg = mensaje;
@@ -42,6 +55,7 @@ class MQTTAppState with ChangeNotifier {
   String get getReceivedTask => _receivedTask;
   // List<String> get getReceivedMsg => [_topic, _msg];
   MQTTAppConnectionState get getAppConnectionState => _appConnectionState;
+  RemoteConnectionState get getRemoteConnectionState => _remoteConnectionState;
 
   String getMensajes(String topico) {
     if (mensajes.containsKey(topico)) {
@@ -55,11 +69,9 @@ class MQTTAppState with ChangeNotifier {
   ///
   ///           estado new tarea
   ///
-  ///
   /////////////////////////////////////////////////////////////
 
   //-------------------------------------listas de estado actual
-
   List<String> listModulos = ['Modulo', 'Tiempo'];
 
   //borro modulos activos (data que llega de mqtt)
@@ -275,3 +287,10 @@ class MQTTAppState with ChangeNotifier {
     }
   }
 }
+
+  /////////////////////////////////////////////////////////////
+  ///
+  ///           estado firebase
+  ///
+  /////////////////////////////////////////////////////////////
+

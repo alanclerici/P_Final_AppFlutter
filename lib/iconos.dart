@@ -1,36 +1,27 @@
 //icono para sens temp
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
 
-class IconoModSens extends StatefulWidget {
-  const IconoModSens(this.id, this.tipo);
+class IconoModSens extends StatelessWidget {
+  IconoModSens(this.id, this.tipo, {super.key});
   final String tipo;
   final String id;
 
-  @override
-  State<IconoModSens> createState() => _IconoModSensState();
-}
-
-class _IconoModSensState extends State<IconoModSens> {
   String valor = '';
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
 
-    String msg = estadomqtt.getMensajes('/mod/${widget.id}/${widget.tipo}');
+    String msg = estadomqtt.getMensajes('/mod/$id/$tipo');
     if (msg != '') {
       valor = msg;
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     final Widget icono;
-    switch (widget.tipo) {
+    switch (tipo) {
       case 'temperatura':
         icono = const Icon(
           Icons.thermostat,
@@ -82,33 +73,68 @@ class _IconoModSensState extends State<IconoModSens> {
 }
 
 //icono para los rele
-class IconoModRele extends StatefulWidget {
-  const IconoModRele(this.manager, this.id);
+class IconoModRele extends StatelessWidget {
+  IconoModRele(this.manager, this.id, {super.key});
   final String id;
   final MQTTManager manager;
 
-  @override
-  State<IconoModRele> createState() => _IconoModReleState();
-}
-
-class _IconoModReleState extends State<IconoModRele> {
   bool estadorele = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
+    final dbfirebase = FirebaseFirestore.instance;
+    final doc = dbfirebase.doc('/server1toApp/mod-$id-estado');
 
-    String msg = estadomqtt.getMensajes('/mod/${widget.id}/estado');
-    if (msg != '') {
-      if (msg == 'on') {
-        estadorele = true;
+    if (estadomqtt.getAppConnectionState ==
+            MQTTAppConnectionState.disconnected &&
+        estadomqtt.getRemoteConnectionState == RemoteConnectionState.conected) {
+      return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: doc.snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          } else {
+            String datafirebase = snapshot.data!['mod-$id-estado'];
+            if (datafirebase != '') {
+              if (datafirebase == 'on') {
+                estadorele = true;
+              }
+              if (datafirebase == 'off') {
+                estadorele = false;
+              }
+            }
+            return ContainerModRele(
+                estadorele: estadorele, manager: manager, id: id);
+          }
+        },
+      );
+    } else {
+      String msg = estadomqtt.getMensajes('/mod/$id/estado');
+      if (msg != '') {
+        if (msg == 'on') {
+          estadorele = true;
+        }
+        if (msg == 'off') {
+          estadorele = false;
+        }
       }
-      if (msg == 'off') {
-        estadorele = false;
-      }
+      return ContainerModRele(estadorele: estadorele, manager: manager, id: id);
     }
   }
+}
+
+class ContainerModRele extends StatelessWidget {
+  const ContainerModRele({
+    Key? key,
+    required this.estadorele,
+    required this.manager,
+    required this.id,
+  }) : super(key: key);
+
+  final bool estadorele;
+  final MQTTManager manager;
+  final String id;
 
   @override
   Widget build(BuildContext context) {
@@ -127,16 +153,26 @@ class _IconoModReleState extends State<IconoModRele> {
       child: TextButton(
           onPressed: () {
             if (estadorele) {
-              widget.manager.publish('/mod/${widget.id}/comandos', 'off');
+              // manager.publish('/mod/$id/comandos', 'off');
+              CollectionReference writedb =
+                  FirebaseFirestore.instance.collection('server1toServer');
+              writedb
+                  .doc('mod-$id-comandos')
+                  .update({'mod-$id-comandos': 'off'});
             } else {
-              widget.manager.publish('/mod/${widget.id}/comandos', 'on');
+              // manager.publish('/mod/$id/comandos', 'on');
+              CollectionReference writedb =
+                  FirebaseFirestore.instance.collection('server1toServer');
+              writedb
+                  .doc('mod-$id-comandos')
+                  .update({'mod-$id-comandos': 'on'});
             }
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
-                child: Text(widget.id,
+                child: Text(id,
                     style: TextStyle(
                         color: estadorele ? Colors.white : Colors.white)),
               ),

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
@@ -15,22 +16,30 @@ class Config extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
+    final dbfirebase = FirebaseFirestore.instance;
+    final doc = dbfirebase.doc('/server1toApp/mod-modsactivos');
 
-    if (estadomqtt.getReceivedStatus.isNotEmpty) {
-      for (var i in jsonDecode(estadomqtt.getReceivedStatus)) {
-        if (i['estado'] == 'activo') {
-          listamodulos.add(i);
-        }
-      }
-      for (var i in listamodulos) {
-        if (i['estado'] == 'activo') {
-          _mods.add(Modulo(manager, i['id'], i['zona']));
-        }
-      }
+    if (estadomqtt.getAppConnectionState ==
+            MQTTAppConnectionState.disconnected &&
+        estadomqtt.getRemoteConnectionState == RemoteConnectionState.conected) {
+      return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: doc.snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          } else {
+            String datafirebase = snapshot.data!['mod-modsactivos'];
+            return ListView(
+              children: listaDeModulos(datafirebase, manager),
+            );
+          }
+        },
+      );
+    } else {
+      return ListView(
+        children: listaDeModulos(estadomqtt.getReceivedStatus, manager),
+      );
     }
-    return ListView(
-      children: _mods,
-    );
   }
 }
 
@@ -44,7 +53,6 @@ class Modulo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final estadomqtt = Provider.of<MQTTAppState>(context);
     return Container(
       height: 60,
       margin: const EdgeInsets.only(
@@ -120,7 +128,7 @@ class Modulo extends StatelessWidget {
 class DropdownButtonExample extends StatefulWidget {
   final String zona;
   final String id;
-  const DropdownButtonExample(this.manager, this.id, this.zona);
+  const DropdownButtonExample(this.manager, this.id, this.zona, {super.key});
   final MQTTManager manager;
 
   @override
@@ -176,4 +184,27 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
       }).toList(),
     );
   }
+}
+
+//funciones
+
+//genera la lista de modulos activos
+List<Widget> listaDeModulos(String lista, MQTTManager manager) {
+  List<dynamic> listamodulos = [];
+  List<Widget> mods = [];
+
+  if (lista.isNotEmpty) {
+    for (var i in jsonDecode(lista)) {
+      if (i['estado'] == 'activo') {
+        listamodulos.add(i);
+      }
+    }
+    for (var i in listamodulos) {
+      if (i['estado'] == 'activo') {
+        mods.add(Modulo(manager, i['id'], i['zona']));
+      }
+    }
+  }
+
+  return mods;
 }

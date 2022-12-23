@@ -41,7 +41,7 @@ class _MainWidgetState extends State<MainWidget> {
         datoDB = value;
         if (datoDB.isNotEmpty) {
           manager.initializeMQTTClient(datoDB[0].toMap()['clave']);
-          manager.connect();
+          // manager.connect();
         }
       });
     });
@@ -81,22 +81,16 @@ class _MainWidgetState extends State<MainWidget> {
     );
 
     switch (currentAppState.getAppConnectionState) {
-      case MQTTAppConnectionState.local:
+      case MQTTAppConnectionState.conected:
         iconosuperior = const Icon(
           Icons.wifi,
           color: Colors.green,
         );
         break;
-      case MQTTAppConnectionState.connecting:
+      case MQTTAppConnectionState.disconnected:
         iconosuperior = const Icon(
           Icons.wifi_off,
           color: Colors.red,
-        );
-        break;
-      case MQTTAppConnectionState.remote:
-        iconosuperior = const Icon(
-          Icons.satellite_alt,
-          color: Colors.blue,
         );
         break;
       default:

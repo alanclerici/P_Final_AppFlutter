@@ -87,7 +87,7 @@ class MQTTManager {
 
   /// The successful connect callback
   void onConnected() {
-    _currentState.setAppConnectionState(MQTTAppConnectionState.local);
+    _currentState.setAppConnectionState(MQTTAppConnectionState.conected);
     // print('EXAMPLE::Mosquitto client connected....');
     _client!.subscribe(_topic, MqttQos.atLeastOnce);
 
