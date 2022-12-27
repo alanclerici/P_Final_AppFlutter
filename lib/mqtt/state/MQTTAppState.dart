@@ -292,9 +292,30 @@ class MQTTAppState with ChangeNotifier {
 
   RemoteConnectionState get getRemoteConnectionState => _remoteConnectionState;
 
+  String _uid = '';
+  String _serverId = '';
+
   void setRemoteConnectionState(RemoteConnectionState state) {
     _remoteConnectionState = state;
     notifyListeners();
+  }
+
+  void setServerId(String id) {
+    _serverId = id;
+    //no notifico porque esta funcion va de la mano con otra qye lo hace
+  }
+
+  String getServerId() {
+    return _serverId;
+  }
+
+  void setFbUid(String id) {
+    _uid = id;
+    //no notifico porque esta funcion va de la mano con otra qye lo hace
+  }
+
+  String getFbUid() {
+    return _uid;
   }
 
   //conexion general

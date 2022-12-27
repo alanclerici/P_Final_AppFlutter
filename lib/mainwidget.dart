@@ -11,10 +11,7 @@ import 'package:smart_home/task.dart';
 import 'package:smart_home/config.dart';
 import 'package:smart_home/home.dart';
 import 'package:smart_home/firebasemanager.dart';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
-
-// import 'package:network_info_plus/network_info_plus.dart';
 
 class MainWidget extends StatefulWidget {
   @override
@@ -31,18 +28,10 @@ class _MainWidgetState extends State<MainWidget> {
   late String ipbroker;
   late dynamic subscription;
   FirebaseManager fbManager = FirebaseManager();
-  // final interfaceInfo = NetworkInfo();
 
   @override
   void initState() {
     super.initState();
-
-    // interfaceInfo.getWifiBroadcast().then((value) {
-    //   ipbroker = getBroketIp(value.toString());
-    //   print(
-    //       ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;');
-    //   print(ipbroker);
-    // });
 
     // CLAVE
     // ----- Esto se ejecuta una vez se construye el widget. Me permite ejecutar la func de conexion al broker

@@ -14,7 +14,8 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
     final dbfirebase = FirebaseFirestore.instance;
-    final doc = dbfirebase.doc('/server1toApp/mod-modsactivos');
+    final dbpath = estadomqtt.getServerId();
+    final doc = dbfirebase.doc('/${dbpath}toApp/mod-modsactivos');
 
     if (estadomqtt.getAppConnectionState ==
             MQTTAppConnectionState.disconnected &&
@@ -49,7 +50,8 @@ class Zona extends StatelessWidget {
   Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
     final dbfirebase = FirebaseFirestore.instance;
-    final doc = dbfirebase.doc('/server1toApp/mod-modsactivos');
+    final dbpath = estadomqtt.getServerId();
+    final doc = dbfirebase.doc('/${dbpath}toApp/mod-modsactivos');
 
     if (estadomqtt.getAppConnectionState ==
             MQTTAppConnectionState.disconnected &&

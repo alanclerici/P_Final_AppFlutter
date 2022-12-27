@@ -17,7 +17,8 @@ class IconoModSens extends StatelessWidget {
     final estadomqtt = Provider.of<MQTTAppState>(context);
     final Widget icono = tipoIconoSensores(tipo);
     final dbfirebase = FirebaseFirestore.instance;
-    final doc = dbfirebase.doc('/server1toApp/mod-$id-$tipo');
+    final dbpath = estadomqtt.getServerId();
+    final doc = dbfirebase.doc('/${dbpath}toApp/mod-$id-$tipo');
 
     if (estadomqtt.getAppConnectionState ==
             MQTTAppConnectionState.disconnected &&
@@ -95,7 +96,8 @@ class IconoModRele extends StatelessWidget {
   Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
     final dbfirebase = FirebaseFirestore.instance;
-    final doc = dbfirebase.doc('/server1toApp/mod-$id-estado');
+    final dbpath = estadomqtt.getServerId();
+    final doc = dbfirebase.doc('/${dbpath}toApp/mod-$id-estado');
 
     if (estadomqtt.getAppConnectionState ==
             MQTTAppConnectionState.disconnected &&
@@ -119,7 +121,8 @@ class IconoModRele extends StatelessWidget {
                 estadorele: estadorele,
                 manager: manager,
                 id: id,
-                tipoConexion: 'remota');
+                tipoConexion: 'remota',
+                dbpath: dbpath);
           }
         },
       );
@@ -137,7 +140,8 @@ class IconoModRele extends StatelessWidget {
           estadorele: estadorele,
           manager: manager,
           id: id,
-          tipoConexion: 'local');
+          tipoConexion: 'local',
+          dbpath: dbpath);
     }
   }
 }
@@ -149,12 +153,14 @@ class ContainerModRele extends StatelessWidget {
     required this.manager,
     required this.id,
     required this.tipoConexion,
+    required this.dbpath,
   }) : super(key: key);
 
   final bool estadorele;
   final MQTTManager manager;
   final String id;
   final String tipoConexion;
+  final String dbpath;
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +184,7 @@ class ContainerModRele extends StatelessWidget {
               }
               if (tipoConexion == 'remota') {
                 CollectionReference writedb =
-                    FirebaseFirestore.instance.collection('server1toServer');
+                    FirebaseFirestore.instance.collection('${dbpath}toServer');
                 writedb
                     .doc('mod-$id-comandos')
                     .update({'mod-$id-comandos': 'off'});
@@ -189,7 +195,7 @@ class ContainerModRele extends StatelessWidget {
               }
               if (tipoConexion == 'remota') {
                 CollectionReference writedb =
-                    FirebaseFirestore.instance.collection('server1toServer');
+                    FirebaseFirestore.instance.collection('${dbpath}toServer');
                 writedb
                     .doc('mod-$id-comandos')
                     .update({'mod-$id-comandos': 'on'});
