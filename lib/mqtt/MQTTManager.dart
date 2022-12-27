@@ -9,10 +9,6 @@ class MQTTManager {
   String _identifier = '';
   String _host = '';
   String _topic = '';
-  // String _clave = '';
-
-  // Constructor
-  // ignore: sort_constructors_first
 
   void set(String host, String topic, String identifier, MQTTAppState state) {
     _identifier = identifier;
@@ -41,26 +37,21 @@ class MQTTManager {
         .startClean() // Non persistent session for testing
         .withWillQos(MqttQos.atLeastOnce)
         .authenticateAs("aplicacion", clave);
-    // print('EXAMPLE::Mosquitto client connecting....');
+
     _client!.connectionMessage = connMess;
   }
 
-  // Connect to the host
-  // ignore: avoid_void_async
   void connect() async {
     assert(_client != null);
     try {
-      // print('EXAMPLE::Mosquitto start client connecting....');
       _currentState.setAppConnectionState(MQTTAppConnectionState.connecting);
       await _client!.connect();
     } on Exception catch (e) {
-      // print('EXAMPLE::client exception - $e');
       disconnect();
     }
   }
 
   void disconnect() {
-    // print('Disconnected');
     _client!.disconnect();
   }
 
@@ -71,30 +62,24 @@ class MQTTManager {
   }
 
   /// The subscribed callback
-  void onSubscribed(String topic) {
-    // print('EXAMPLE::Subscription confirmed for topic $topic');
-  }
+  void onSubscribed(String topic) {}
 
   /// The unsolicited disconnect callback
   void onDisconnected() {
-    // print('EXAMPLE::OnDisconnected client callback - Client disconnection');
     if (_client!.connectionStatus!.returnCode ==
-        MqttConnectReturnCode.noneSpecified) {
-      // print('EXAMPLE::OnDisconnected callback is solicited, this is correct');
-    }
+        MqttConnectReturnCode.noneSpecified) {}
     _currentState.setAppConnectionState(MQTTAppConnectionState.disconnected);
   }
 
   /// The successful connect callback
   void onConnected() {
     _currentState.setAppConnectionState(MQTTAppConnectionState.conected);
-    // print('EXAMPLE::Mosquitto client connected....');
+
     _client!.subscribe(_topic, MqttQos.atLeastOnce);
 
     _client!.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
-      // ignore: avoid_as
       final MqttPublishMessage recMess = c![0].payload as MqttPublishMessage;
-      // final MqttPublishMessage recMess = c![0].payload;
+
       final String msg =
           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
 
@@ -105,9 +90,6 @@ class MQTTManager {
       } else {
         _currentState.setReceivedMsg(c[0].topic.toString(), msg.toString());
       }
-      // print(
-      //     'EXAMPLE::Change notification:: topic is <${c[0].topic}>, payload is <-- $msg -->');
-      // print('');
     });
   }
 }

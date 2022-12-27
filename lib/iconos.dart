@@ -15,38 +15,49 @@ class IconoModSens extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
+    final Widget icono = tipoIconoSensores(tipo);
+    final dbfirebase = FirebaseFirestore.instance;
+    final doc = dbfirebase.doc('/server1toApp/mod-$id-$tipo');
 
-    String msg = estadomqtt.getMensajes('/mod/$id/$tipo');
-    if (msg != '') {
-      valor = msg;
+    if (estadomqtt.getAppConnectionState ==
+            MQTTAppConnectionState.disconnected &&
+        estadomqtt.getRemoteConnectionState == RemoteConnectionState.conected) {
+      return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: doc.snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          } else {
+            String datafirebase = snapshot.data!['mod-$id-$tipo'];
+            if (datafirebase != '') {
+              valor = datafirebase;
+            }
+            return ContainerModSens(valor: valor, icono: icono);
+          }
+        },
+      );
+    } else {
+      String msg = estadomqtt.getMensajes('/mod/$id/$tipo');
+      if (msg != '') {
+        valor = msg;
+      }
+      return ContainerModSens(valor: valor, icono: icono);
     }
-    final Widget icono;
-    switch (tipo) {
-      case 'temperatura':
-        icono = const Icon(
-          Icons.thermostat,
-          color: Colors.white,
-        );
-        break;
-      case 'humedad':
-        icono = const Icon(
-          Icons.water_drop_outlined,
-          color: Colors.white,
-        );
-        break;
-      case 'presion':
-        icono = const Icon(
-          Icons.atm,
-          color: Colors.white,
-        );
-        break;
-      default:
-        icono = const Icon(
-          Icons.error_outline,
-          color: Colors.white,
-        );
-    }
+  }
+}
 
+class ContainerModSens extends StatelessWidget {
+  const ContainerModSens({
+    Key? key,
+    required this.valor,
+    required this.icono,
+  }) : super(key: key);
+
+  final String valor;
+  final Widget icono;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       height: 90,
       width: 90,
@@ -105,7 +116,10 @@ class IconoModRele extends StatelessWidget {
               }
             }
             return ContainerModRele(
-                estadorele: estadorele, manager: manager, id: id);
+                estadorele: estadorele,
+                manager: manager,
+                id: id,
+                tipoConexion: 'remota');
           }
         },
       );
@@ -119,7 +133,11 @@ class IconoModRele extends StatelessWidget {
           estadorele = false;
         }
       }
-      return ContainerModRele(estadorele: estadorele, manager: manager, id: id);
+      return ContainerModRele(
+          estadorele: estadorele,
+          manager: manager,
+          id: id,
+          tipoConexion: 'local');
     }
   }
 }
@@ -130,11 +148,13 @@ class ContainerModRele extends StatelessWidget {
     required this.estadorele,
     required this.manager,
     required this.id,
+    required this.tipoConexion,
   }) : super(key: key);
 
   final bool estadorele;
   final MQTTManager manager;
   final String id;
+  final String tipoConexion;
 
   @override
   Widget build(BuildContext context) {
@@ -153,19 +173,27 @@ class ContainerModRele extends StatelessWidget {
       child: TextButton(
           onPressed: () {
             if (estadorele) {
-              // manager.publish('/mod/$id/comandos', 'off');
-              CollectionReference writedb =
-                  FirebaseFirestore.instance.collection('server1toServer');
-              writedb
-                  .doc('mod-$id-comandos')
-                  .update({'mod-$id-comandos': 'off'});
+              if (tipoConexion == 'local') {
+                manager.publish('/mod/$id/comandos', 'off');
+              }
+              if (tipoConexion == 'remota') {
+                CollectionReference writedb =
+                    FirebaseFirestore.instance.collection('server1toServer');
+                writedb
+                    .doc('mod-$id-comandos')
+                    .update({'mod-$id-comandos': 'off'});
+              }
             } else {
-              // manager.publish('/mod/$id/comandos', 'on');
-              CollectionReference writedb =
-                  FirebaseFirestore.instance.collection('server1toServer');
-              writedb
-                  .doc('mod-$id-comandos')
-                  .update({'mod-$id-comandos': 'on'});
+              if (tipoConexion == 'local') {
+                manager.publish('/mod/$id/comandos', 'on');
+              }
+              if (tipoConexion == 'remota') {
+                CollectionReference writedb =
+                    FirebaseFirestore.instance.collection('server1toServer');
+                writedb
+                    .doc('mod-$id-comandos')
+                    .update({'mod-$id-comandos': 'on'});
+              }
             }
           },
           child: Column(
@@ -267,5 +295,32 @@ class IconoCtrlIR extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+Widget tipoIconoSensores(String tipo) {
+  switch (tipo) {
+    case 'temperatura':
+      return const Icon(
+        Icons.thermostat,
+        color: Colors.white,
+      );
+    case 'humedad':
+      return const Icon(
+        Icons.water_drop_outlined,
+        color: Colors.white,
+      );
+
+    case 'presion':
+      return const Icon(
+        Icons.atm,
+        color: Colors.white,
+      );
+
+    default:
+      return const Icon(
+        Icons.error_outline,
+        color: Colors.white,
+      );
   }
 }

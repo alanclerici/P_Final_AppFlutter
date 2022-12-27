@@ -12,7 +12,7 @@ enum RemoteConnectionState { conected, disconnected, connecting }
 class MQTTAppState with ChangeNotifier {
   MQTTAppConnectionState _appConnectionState =
       MQTTAppConnectionState.disconnected;
-  RemoteConnectionState _remoteConnectionState = RemoteConnectionState.conected;
+
   String _receivedStatus = '';
   String _receivedTask = '';
   // String _msg = '';
@@ -37,11 +37,6 @@ class MQTTAppState with ChangeNotifier {
     notifyListeners();
   }
 
-  void setRemoteConnectionState(RemoteConnectionState state) {
-    _remoteConnectionState = state;
-    notifyListeners();
-  }
-
   //todos los mensajes menos los de status
   void setReceivedMsg(String topico, String mensaje) {
     // _msg = mensaje;
@@ -55,7 +50,6 @@ class MQTTAppState with ChangeNotifier {
   String get getReceivedTask => _receivedTask;
   // List<String> get getReceivedMsg => [_topic, _msg];
   MQTTAppConnectionState get getAppConnectionState => _appConnectionState;
-  RemoteConnectionState get getRemoteConnectionState => _remoteConnectionState;
 
   String getMensajes(String topico) {
     if (mensajes.containsKey(topico)) {
@@ -286,7 +280,6 @@ class MQTTAppState with ChangeNotifier {
       return ['tipo invalido'];
     }
   }
-}
 
   /////////////////////////////////////////////////////////////
   ///
@@ -294,3 +287,12 @@ class MQTTAppState with ChangeNotifier {
   ///
   /////////////////////////////////////////////////////////////
 
+  RemoteConnectionState _remoteConnectionState = RemoteConnectionState.conected;
+
+  RemoteConnectionState get getRemoteConnectionState => _remoteConnectionState;
+
+  void setRemoteConnectionState(RemoteConnectionState state) {
+    _remoteConnectionState = state;
+    notifyListeners();
+  }
+}
