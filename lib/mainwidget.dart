@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/datoDB.dart';
 import 'package:smart_home/db.dart';
@@ -9,6 +10,11 @@ import 'package:smart_home/nuevatarea.dart';
 import 'package:smart_home/task.dart';
 import 'package:smart_home/config.dart';
 import 'package:smart_home/home.dart';
+import 'package:smart_home/firebasemanager.dart';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+
+// import 'package:network_info_plus/network_info_plus.dart';
 
 class MainWidget extends StatefulWidget {
   @override
@@ -22,10 +28,21 @@ class _MainWidgetState extends State<MainWidget> {
   List<DatoDB> datoDB = [];
   late MQTTAppState currentAppState;
   MQTTManager manager = MQTTManager();
+  late String ipbroker;
+  late dynamic subscription;
+  FirebaseManager fbManager = FirebaseManager();
+  // final interfaceInfo = NetworkInfo();
 
   @override
   void initState() {
     super.initState();
+
+    // interfaceInfo.getWifiBroadcast().then((value) {
+    //   ipbroker = getBroketIp(value.toString());
+    //   print(
+    //       ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;');
+    //   print(ipbroker);
+    // });
 
     // CLAVE
     // ----- Esto se ejecuta una vez se construye el widget. Me permite ejecutar la func de conexion al broker
@@ -36,12 +53,26 @@ class _MainWidgetState extends State<MainWidget> {
         'app',
         currentAppState,
       );
+      fbManager.set(currentAppState);
+      fbManager.listen();
 
       Db.instance.getAllItems().then((value) {
         datoDB = value;
         if (datoDB.isNotEmpty) {
+          //si encuentro el codigo conecto y lanzo el listener para detectar cambios en la red
           manager.initializeMQTTClient(datoDB[0].toMap()['clave']);
           // manager.connect();
+          subscription = Connectivity()
+              .onConnectivityChanged
+              .listen((ConnectivityResult result) {
+            if (result == ConnectivityResult.wifi) {
+              print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;');
+              print('conectao');
+            } else {
+              print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;');
+              print('no conectao');
+            }
+          });
         }
       });
     });
@@ -50,6 +81,7 @@ class _MainWidgetState extends State<MainWidget> {
   @override
   void dispose() {
     super.dispose();
+    subscription.cancel();
   }
 
   static const Color grisbase =
@@ -80,25 +112,7 @@ class _MainWidgetState extends State<MainWidget> {
       child: const Icon(Icons.add),
     );
 
-    switch (currentAppState.getAppConnectionState) {
-      case MQTTAppConnectionState.conected:
-        iconosuperior = const Icon(
-          Icons.wifi,
-          color: Colors.green,
-        );
-        break;
-      case MQTTAppConnectionState.disconnected:
-        iconosuperior = const Icon(
-          Icons.wifi_off,
-          color: Colors.red,
-        );
-        break;
-      default:
-        iconosuperior = const Icon(
-          Icons.wifi_off,
-          color: Colors.white,
-        );
-    }
+    iconosuperior = getIconoEstadoConexion(appState.getConnectionGeneral());
 
     List<Widget> vistas = [Home(manager), Task(manager), Config(manager)];
 
@@ -112,7 +126,7 @@ class _MainWidgetState extends State<MainWidget> {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) =>
                       ChangeNotifierProvider<MQTTAppState>.value(
-                          value: appState, child: Login(manager))));
+                          value: appState, child: Login(manager, fbManager))));
             },
             icon: iconosuperior,
           )
@@ -142,5 +156,33 @@ class _MainWidgetState extends State<MainWidget> {
         onTap: _onItemTapped,
       ),
     );
+  }
+}
+
+String getBrokerIp(String ip) {
+  //recive la direccion de difusion, devuelve la ultima dir-4
+  final aux = ip.split('.');
+  aux[3] = (int.parse(aux[3]) - 5).toString();
+  return aux.join('.');
+}
+
+Widget getIconoEstadoConexion(String estado) {
+  switch (estado) {
+    case 'local':
+      return const Icon(
+        Icons.wifi,
+        color: Colors.green,
+      );
+    case 'remota':
+      return const Icon(
+        Icons.satellite_alt_outlined,
+        color: Colors.yellow,
+      );
+
+    default:
+      return const Icon(
+        Icons.wifi_off,
+        color: Colors.red,
+      );
   }
 }

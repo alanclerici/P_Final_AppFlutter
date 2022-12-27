@@ -287,12 +287,24 @@ class MQTTAppState with ChangeNotifier {
   ///
   /////////////////////////////////////////////////////////////
 
-  RemoteConnectionState _remoteConnectionState = RemoteConnectionState.conected;
+  RemoteConnectionState _remoteConnectionState =
+      RemoteConnectionState.disconnected;
 
   RemoteConnectionState get getRemoteConnectionState => _remoteConnectionState;
 
   void setRemoteConnectionState(RemoteConnectionState state) {
     _remoteConnectionState = state;
     notifyListeners();
+  }
+
+  //conexion general
+  String getConnectionGeneral() {
+    if (_appConnectionState == MQTTAppConnectionState.conected) {
+      return 'local';
+    } else if (_remoteConnectionState == RemoteConnectionState.conected) {
+      return 'remota';
+    } else {
+      return 'desconectado';
+    }
   }
 }

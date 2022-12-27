@@ -5,12 +5,14 @@ import 'package:smart_home/db.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:smart_home/firebasemanager.dart';
 
 const Color grisbase = Color.fromARGB(255, 50, 50, 50);
 
 class Login extends StatelessWidget {
-  Login(this.manager, {super.key});
+  Login(this.manager, this.fbManager, {super.key});
   MQTTManager manager;
+  FirebaseManager fbManager;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class Login extends StatelessWidget {
         child: Column(
           children: [
             LocalLogin(manager),
-            RemoteLogin(),
+            RemoteLogin(fbManager),
           ],
         ),
       ),
@@ -107,8 +109,8 @@ class _LocalLoginState extends State<LocalLogin> {
 }
 
 class RemoteLogin extends StatefulWidget {
-  const RemoteLogin({super.key});
-
+  RemoteLogin(this.fbManager, {super.key});
+  FirebaseManager fbManager;
   @override
   State<RemoteLogin> createState() => _RemoteLoginState();
 }
@@ -116,12 +118,12 @@ class RemoteLogin extends StatefulWidget {
 class _RemoteLoginState extends State<RemoteLogin> {
   late TextEditingController _controllerUser, _controllerPasw;
 
-  Future ConectarFirebase() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-        // email: _controllerUser.text, password: _controllerPasw.text);
-        email: 'user1@app.com',
-        password: 'user123');
-  }
+  // Future ConectarFirebase() async {
+  //   await FirebaseAuth.instance.signInWithEmailAndPassword(
+  //       // email: _controllerUser.text, password: _controllerPasw.text);
+  //       email: 'user1@app.com',
+  //       password: 'user123');
+  // }
 
   @override
   void initState() {
@@ -184,7 +186,7 @@ class _RemoteLoginState extends State<RemoteLogin> {
         ),
         TextButton(
           onPressed: () {
-            ConectarFirebase();
+            widget.fbManager.connect('user1@app.com', 'user123');
           },
           child: const Text(
             'Conectar',
@@ -193,26 +195,13 @@ class _RemoteLoginState extends State<RemoteLogin> {
         ),
         TextButton(
           onPressed: () {
-            FirebaseAuth.instance.signOut();
+            widget.fbManager.disconnect();
           },
           child: const Text(
             'Desonectar',
             style: TextStyle(color: Colors.white),
           ),
         ),
-        StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-          stream: doc.snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const CircularProgressIndicator();
-            } else {
-              return Text(
-                snapshot.data!['mod-R00001-estado'] ?? 'sin data',
-                style: TextStyle(color: Colors.white),
-              );
-            }
-          },
-        )
       ],
     );
   }
