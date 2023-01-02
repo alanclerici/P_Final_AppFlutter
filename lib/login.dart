@@ -1,11 +1,11 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:smart_home/datoDB.dart';
 import 'package:smart_home/db.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smart_home/firebasemanager.dart';
+import 'package:udp/udp.dart';
 
 const Color grisbase = Color.fromARGB(255, 50, 50, 50);
 
@@ -47,6 +47,23 @@ class _LocalLoginState extends State<LocalLogin> {
   late List<DatoDB> datoDB;
   late String textoinicial;
 
+  void sincronzacion() async {
+    var sender = await UDP.bind(Endpoint.any());
+
+    var receiver = await UDP.bind(Endpoint.any(port: Port(2222)));
+    receiver.asStream(timeout: Duration(seconds: 10)).listen((datagram) {
+      var str = String.fromCharCodes(datagram!.data);
+      if (str.isNotEmpty && str != 'GetIp') {
+        print(str);
+        receiver.close();
+      }
+    });
+
+    await sender.send("GetIp".codeUnits,
+        Endpoint.unicast(InternetAddress('192.168.0.255'), port: Port(2222)));
+    sender.close();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -61,7 +78,7 @@ class _LocalLoginState extends State<LocalLogin> {
           if (snapshot.hasData) {
             datoDB = snapshot.data!;
             if (datoDB.isNotEmpty) {
-              textoinicial = datoDB[0].toMap()['clave'];
+              _controller.text = datoDB[0].toMap()['clave'];
             } else {
               textoinicial = 'Insertar clave';
             }
@@ -70,36 +87,53 @@ class _LocalLoginState extends State<LocalLogin> {
           }
           return Column(
             children: [
-              const Text(
-                'Clave',
-                style: TextStyle(color: Colors.white),
+              Row(
+                children: [
+                  const Text(
+                    'Acceso local',
+                    style: TextStyle(color: Colors.grey, fontSize: 20),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Icon(Icons.wheelchair_pickup_outlined),
+                ],
               ),
               TextField(
+                obscureText: true,
                 cursorColor: Colors.black,
-                style: const TextStyle(color: Colors.black),
+                style: const TextStyle(color: Colors.orange),
                 decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey,
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(40)),
-                    hintText: textoinicial,
-                    hintStyle: const TextStyle(color: Colors.black)),
+                  // filled: true,
+                  // fillColor: Colors.grey[700],
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(width: 1, color: Colors.orange),
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  hintText: textoinicial,
+                  hintStyle: const TextStyle(color: Colors.orange),
+                ),
                 controller: _controller,
-                onSubmitted: (String valuet) {
-                  // textoescrito = valuet;
-                },
+                onSubmitted: (String valuet) {},
               ),
-              TextButton(
-                onPressed: () {
-                  Db.instance.insert(
-                      DatoDB(id: 1, autologin: 'si', clave: _controller.text));
-                  widget.manager.initializeMQTTClient(_controller.text);
-                  widget.manager.connect();
-                },
-                child: const Text(
-                  'Conectar',
-                  style: TextStyle(color: Colors.white),
+              Container(
+                decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: const BorderRadius.all(Radius.circular(8))),
+                child: TextButton(
+                  onPressed: () {
+                    final ipBroker = '192.168.0.200';
+                    // sincronzacion();
+                    Db.instance.insert(
+                        DatoDB(id: 1, ip: ipBroker, clave: _controller.text));
+                    widget.manager
+                        .initializeMQTTClient(_controller.text, ipBroker);
+                    widget.manager.connect();
+                  },
+                  child: const Text(
+                    'Sincronizar',
+                    style: TextStyle(color: Colors.orange, fontSize: 18),
+                  ),
                 ),
               ),
             ],
@@ -117,13 +151,6 @@ class RemoteLogin extends StatefulWidget {
 
 class _RemoteLoginState extends State<RemoteLogin> {
   late TextEditingController _controllerUser, _controllerPasw;
-
-  // Future ConectarFirebase() async {
-  //   await FirebaseAuth.instance.signInWithEmailAndPassword(
-  //       // email: _controllerUser.text, password: _controllerPasw.text);
-  //       email: 'user1@app.com',
-  //       password: 'user123');
-  // }
 
   @override
   void initState() {
@@ -148,21 +175,34 @@ class _RemoteLoginState extends State<RemoteLogin> {
     ///
     return Column(
       children: [
-        const Text(
-          'Acceso remoto',
-          style: TextStyle(color: Colors.white),
+        Row(
+          children: [
+            const Text(
+              'Acceso remoto',
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            const Text(
+              '(Desconectado)',
+              style: TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ],
         ),
         TextField(
           cursorColor: Colors.black,
           style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.grey,
-              border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(40)),
-              hintText: 'Usuario',
-              hintStyle: const TextStyle(color: Colors.black)),
+            // filled: true,
+            // fillColor: Colors.grey[700],
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(width: 1, color: Colors.orange),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            hintText: 'Usuario',
+            hintStyle: const TextStyle(color: Colors.white),
+          ),
           controller: _controllerUser,
           onSubmitted: (String valuet) {
             // textoescrito = valuet;
@@ -172,35 +212,42 @@ class _RemoteLoginState extends State<RemoteLogin> {
           cursorColor: Colors.black,
           style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.grey,
-              border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(40)),
-              hintText: 'Contrasenia',
-              hintStyle: const TextStyle(color: Colors.black)),
+            // filled: true,
+            // fillColor: Colors.grey[700],
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(width: 1, color: Colors.orange),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            hintText: 'Contrasenia',
+            hintStyle: const TextStyle(color: Colors.white),
+          ),
           controller: _controllerPasw,
           onSubmitted: (String valuet) {
             // textoescrito = valuet;
           },
         ),
-        TextButton(
-          onPressed: () {
-            widget.fbManager.connect('user1@app.com', 'user123');
-          },
-          child: const Text(
-            'Conectar',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            widget.fbManager.disconnect();
-          },
-          child: const Text(
-            'Desonectar',
-            style: TextStyle(color: Colors.white),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () {
+                widget.fbManager.connect('user1@app.com', 'user123');
+              },
+              child: const Text(
+                'Conectar',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                widget.fbManager.disconnect();
+              },
+              child: const Text(
+                'Desonectar',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
         ),
       ],
     );

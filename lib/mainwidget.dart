@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/datoDB.dart';
 import 'package:smart_home/db.dart';
@@ -12,6 +11,7 @@ import 'package:smart_home/config.dart';
 import 'package:smart_home/home.dart';
 import 'package:smart_home/firebasemanager.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:io';
 
 class MainWidget extends StatefulWidget {
   @override
@@ -28,16 +28,27 @@ class _MainWidgetState extends State<MainWidget> {
   late String ipbroker;
   late dynamic subscription;
   FirebaseManager fbManager = FirebaseManager();
+  String ipBroker = '';
 
   @override
   void initState() {
     super.initState();
 
+    NetworkInterface.list().then((interfaces) {
+      for (var i in interfaces) {
+        if (i.name.contains('wlan')) {
+          ipBroker = getBrokerIp(i.addresses.last.address);
+        }
+      }
+    });
+
+    ipBroker = '192.168.0.200';
+
     // CLAVE
     // ----- Esto se ejecuta una vez se construye el widget. Me permite ejecutar la func de conexion al broker
     WidgetsBinding.instance.addPostFrameCallback((_) {
       manager.set(
-        '192.168.0.200',
+        ipBroker,
         '/mod/#',
         'app',
         currentAppState,
@@ -49,16 +60,16 @@ class _MainWidgetState extends State<MainWidget> {
         datoDB = value;
         if (datoDB.isNotEmpty) {
           //si encuentro el codigo conecto y lanzo el listener para detectar cambios en la red
-          manager.initializeMQTTClient(datoDB[0].toMap()['clave']);
+          manager.initializeMQTTClient(
+              datoDB[0].toMap()['clave'], datoDB[0].toMap()['ip']);
           // manager.connect();
           subscription = Connectivity()
               .onConnectivityChanged
               .listen((ConnectivityResult result) {
             if (result == ConnectivityResult.wifi) {
-              print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;');
               print('conectao');
+            } else if (result == ConnectivityResult.mobile) {
             } else {
-              print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;');
               print('no conectao');
             }
           });
@@ -149,9 +160,9 @@ class _MainWidgetState extends State<MainWidget> {
 }
 
 String getBrokerIp(String ip) {
-  //recive la direccion de difusion, devuelve la ultima dir-4
+  //recive la ip, devuelve la ultima dir-4,(suponiendo /24)
   final aux = ip.split('.');
-  aux[3] = (int.parse(aux[3]) - 5).toString();
+  aux[3] = (250).toString();
   return aux.join('.');
 }
 

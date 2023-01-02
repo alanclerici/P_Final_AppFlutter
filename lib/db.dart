@@ -9,12 +9,12 @@ class Db {
 
   Db._init();
 
-  final String tablaDatos = 'datos';
+  final String tablaDatos = 'datosBroker';
 
   Future<Database> get database async {
     if (_database != null) return _database!;
 
-    _database = await _initDB('datos.db');
+    _database = await _initDB('datosBroker.db');
     return _database!;
   }
 
@@ -29,7 +29,7 @@ class Db {
     await db.execute('''
     CREATE TABLE $tablaDatos(
     id INTEGER PRIMARY KEY,
-    autologin TEXT,
+    ip TEXT,
     clave TEXT
     )
     ''');
@@ -48,7 +48,7 @@ class Db {
     return List.generate(maps.length, (i) {
       return DatoDB(
         id: maps[i]['id'],
-        autologin: maps[i]['autologin'],
+        ip: maps[i]['ip'],
         clave: maps[i]['clave'],
       );
     });

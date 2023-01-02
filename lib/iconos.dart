@@ -234,6 +234,10 @@ class IconoCtrlIR extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estadomqtt = Provider.of<MQTTAppState>(context);
+    final dbfirebase = FirebaseFirestore.instance;
+    final dbpath = estadomqtt.getServerId();
+    final doc = dbfirebase.doc('/${dbpath}toApp/mod-$idmodulo');
     var icono;
 
     switch (tipo) {
@@ -292,11 +296,30 @@ class IconoCtrlIR extends StatelessWidget {
         color: Colors.white,
         onPressed: () {
           if (modo == 'normal' && codigo != 'null') {
-            manager.publish(
-                '/mod/$idmodulo', int.parse(codigo, radix: 16).toString());
+            if (estadomqtt.getAppConnectionState ==
+                    MQTTAppConnectionState.disconnected &&
+                estadomqtt.getRemoteConnectionState ==
+                    RemoteConnectionState.conected) {
+              CollectionReference writedb =
+                  FirebaseFirestore.instance.collection('${dbpath}toServer');
+              writedb.doc('mod-$idmodulo').update(
+                  {'mod-$idmodulo': int.parse(codigo, radix: 16).toString()});
+            } else {
+              manager.publish(
+                  '/mod/$idmodulo', int.parse(codigo, radix: 16).toString());
+            }
           }
           if (modo == 'configuracion') {
-            manager.publish('/mod/$idmodulo', idboton);
+            if (estadomqtt.getAppConnectionState ==
+                    MQTTAppConnectionState.disconnected &&
+                estadomqtt.getRemoteConnectionState ==
+                    RemoteConnectionState.conected) {
+              CollectionReference writedb =
+                  FirebaseFirestore.instance.collection('${dbpath}toServer');
+              writedb.doc('mod-$idmodulo').update({'mod-$idmodulo': idboton});
+            } else {
+              manager.publish('/mod/$idmodulo', idboton);
+            }
           }
         },
       ),

@@ -17,8 +17,9 @@ class MQTTManager {
     _currentState = state;
   }
 
-  void initializeMQTTClient(String clave) {
-    _client = MqttServerClient(_host, _identifier);
+  //password como parametro. el usuario esta harcodeado
+  void initializeMQTTClient(String clave, String ip) {
+    _client = MqttServerClient(ip, _identifier);
     _client!.port = 1883;
     _client!.keepAlivePeriod = 20;
     _client!.onDisconnected = onDisconnected;
