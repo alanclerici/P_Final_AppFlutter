@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
 import 'mqtt/state/MQTTAppState.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Task extends StatelessWidget {
   Task(this.manager, {super.key});
@@ -13,15 +14,39 @@ class Task extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final estadomqtt = Provider.of<MQTTAppState>(context);
+    final dbfirebase = FirebaseFirestore.instance;
+    final dbpath = estadomqtt.getServerId();
+    final doc = dbfirebase.doc('/${dbpath}toApp/mod-tareasactivas');
 
-    if (estadomqtt.getReceivedTask.isNotEmpty) {
-      for (var i in jsonDecode(estadomqtt.getReceivedTask)) {
-        tareas.add(Tarea(manager, i['nombre'], i['estado']));
+    if (!estadomqtt.getLocalState && estadomqtt.getRemoteState) {
+      return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: doc.snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          } else {
+            String datafirebase = snapshot.data!['mod-tareasactivas'];
+            if (datafirebase.isNotEmpty) {
+              for (var i in jsonDecode(datafirebase)) {
+                tareas.add(Tarea(manager, i['nombre'], i['estado']));
+              }
+            }
+            return ListView(
+              children: tareas,
+            );
+          }
+        },
+      );
+    } else {
+      if (estadomqtt.getReceivedTask.isNotEmpty) {
+        for (var i in jsonDecode(estadomqtt.getReceivedTask)) {
+          tareas.add(Tarea(manager, i['nombre'], i['estado']));
+        }
       }
+      return ListView(
+        children: tareas,
+      );
     }
-    return ListView(
-      children: tareas,
-    );
   }
 }
 
@@ -90,6 +115,8 @@ class SwitchEstado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estadomqtt = Provider.of<MQTTAppState>(context);
+    final dbpath = estadomqtt.getServerId();
     bool light;
     if (estadoinicial == 'activa') {
       light = true;
@@ -102,9 +129,25 @@ class SwitchEstado extends StatelessWidget {
       activeColor: Colors.orange,
       onChanged: ((value) {
         if (light) {
-          manager.publish('/task/setestado/$nombre', 'inactiva');
+          if (estadomqtt.getLocalState) {
+            manager.publish('/task/setestado/$nombre', 'inactiva');
+          } else {
+            CollectionReference writedb =
+                FirebaseFirestore.instance.collection('${dbpath}toServer');
+            writedb
+                .doc('task-setestado-$nombre')
+                .update({'task-setestado-$nombre': 'inactiva'});
+          }
         } else {
-          manager.publish('/task/setestado/$nombre', 'activa');
+          if (estadomqtt.getLocalState) {
+            manager.publish('/task/setestado/$nombre', 'activa');
+          } else {
+            CollectionReference writedb =
+                FirebaseFirestore.instance.collection('${dbpath}toServer');
+            writedb
+                .doc('task-setestado-$nombre')
+                .update({'task-setestado-$nombre': 'activa'});
+          }
         }
       }),
     );

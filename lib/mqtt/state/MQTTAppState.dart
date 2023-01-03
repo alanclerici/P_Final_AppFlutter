@@ -51,6 +51,10 @@ class MQTTAppState with ChangeNotifier {
   // List<String> get getReceivedMsg => [_topic, _msg];
   MQTTAppConnectionState get getAppConnectionState => _appConnectionState;
 
+  //si estoy conectadoen local devuelvo true
+  bool get getLocalState =>
+      _appConnectionState == MQTTAppConnectionState.conected ? true : false;
+
   String getMensajes(String topico) {
     if (mensajes.containsKey(topico)) {
       return mensajes[topico];
@@ -291,6 +295,9 @@ class MQTTAppState with ChangeNotifier {
       RemoteConnectionState.disconnected;
 
   RemoteConnectionState get getRemoteConnectionState => _remoteConnectionState;
+
+  bool get getRemoteState =>
+      _remoteConnectionState == RemoteConnectionState.conected ? true : false;
 
   String _uid = '';
   String _serverId = '';

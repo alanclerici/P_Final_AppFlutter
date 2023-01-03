@@ -20,11 +20,14 @@ class FirebaseManager {
   }
 
   void listen() {
+    //escucho cambios en la autenticacion
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
+        //si no estoy logueado seteo el estado como desconectado
         _currentState
             .setRemoteConnectionState(RemoteConnectionState.disconnected);
       } else {
+        //si estoy logueado voy a buscar el nro de servidor que le corresponde a mi usuario
         _currentState.setFbUid(user.uid.toString());
         db.doc(user.uid.toString()).get().then((value) {
           Map<String, dynamic> aux = value.data() as Map<String, dynamic>;

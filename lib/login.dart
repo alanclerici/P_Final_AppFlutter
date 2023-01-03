@@ -1,11 +1,15 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:provider/provider.dart';
 import 'package:smart_home/datoDB.dart';
 import 'package:smart_home/db.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:smart_home/firebasemanager.dart';
 import 'package:udp/udp.dart';
+import 'package:smart_home/mqtt/state/MQTTAppState.dart';
 
 const Color grisbase = Color.fromARGB(255, 50, 50, 50);
 
@@ -22,13 +26,13 @@ class Login extends StatelessWidget {
         backgroundColor: grisbase,
         title: const Text("Sesion"),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            LocalLogin(manager),
-            RemoteLogin(fbManager),
-          ],
-        ),
+      body: Column(
+        children: [
+          SizedBox(height: 10),
+          LocalLogin(manager),
+          SizedBox(height: 20),
+          RemoteLogin(fbManager),
+        ],
       ),
     );
   }
@@ -46,23 +50,7 @@ class _LocalLoginState extends State<LocalLogin> {
   late TextEditingController _controller;
   late List<DatoDB> datoDB;
   late String textoinicial;
-
-  void sincronzacion() async {
-    var sender = await UDP.bind(Endpoint.any());
-
-    var receiver = await UDP.bind(Endpoint.any(port: Port(2222)));
-    receiver.asStream(timeout: Duration(seconds: 10)).listen((datagram) {
-      var str = String.fromCharCodes(datagram!.data);
-      if (str.isNotEmpty && str != 'GetIp') {
-        print(str);
-        receiver.close();
-      }
-    });
-
-    await sender.send("GetIp".codeUnits,
-        Endpoint.unicast(InternetAddress('192.168.0.255'), port: Port(2222)));
-    sender.close();
-  }
+  late bool estadoLocal;
 
   @override
   void initState() {
@@ -72,6 +60,8 @@ class _LocalLoginState extends State<LocalLogin> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<MQTTAppState>(context);
+    estadoLocal = appState.getLocalState;
     return FutureBuilder(
         future: Db.instance.getAllItems(),
         builder: (BuildContext context, AsyncSnapshot<List<DatoDB>> snapshot) {
@@ -88,38 +78,34 @@ class _LocalLoginState extends State<LocalLogin> {
           return Column(
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
                     'Acceso local',
-                    style: TextStyle(color: Colors.grey, fontSize: 20),
+                    style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Icon(Icons.wheelchair_pickup_outlined),
+                  estadoLocal
+                      ? const Text(
+                          '(Conectado)',
+                          style: TextStyle(color: Colors.green, fontSize: 14),
+                        )
+                      : const Text(
+                          '(Desconectado)',
+                          style: TextStyle(color: Colors.red, fontSize: 14),
+                        ),
                 ],
               ),
               TextField(
                 obscureText: true,
                 cursorColor: Colors.black,
-                style: const TextStyle(color: Colors.orange),
-                decoration: InputDecoration(
-                  // filled: true,
-                  // fillColor: Colors.grey[700],
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(width: 1, color: Colors.orange),
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  hintText: textoinicial,
-                  hintStyle: const TextStyle(color: Colors.orange),
-                ),
+                style: const TextStyle(color: Colors.white),
+                decoration: decorationTextFiel(textoinicial),
                 controller: _controller,
                 onSubmitted: (String valuet) {},
               ),
+              SizedBox(height: 8),
               Container(
-                decoration: BoxDecoration(
-                    color: Colors.grey[900],
-                    borderRadius: const BorderRadius.all(Radius.circular(8))),
+                decoration: decorationContainerButton(),
                 child: TextButton(
                   onPressed: () {
                     final ipBroker = '192.168.0.200';
@@ -132,7 +118,7 @@ class _LocalLoginState extends State<LocalLogin> {
                   },
                   child: const Text(
                     'Sincronizar',
-                    style: TextStyle(color: Colors.orange, fontSize: 18),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ),
@@ -151,6 +137,7 @@ class RemoteLogin extends StatefulWidget {
 
 class _RemoteLoginState extends State<RemoteLogin> {
   late TextEditingController _controllerUser, _controllerPasw;
+  late bool estadoRemoto;
 
   @override
   void initState() {
@@ -168,14 +155,14 @@ class _RemoteLoginState extends State<RemoteLogin> {
 
   @override
   Widget build(BuildContext context) {
-    /////
+    final appState = Provider.of<MQTTAppState>(context);
     final dbfirebase = FirebaseFirestore.instance;
     final doc = dbfirebase.doc('/server1toApp/mod-R00001-estado');
-
-    ///
+    estadoRemoto = appState.getRemoteState;
     return Column(
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
               'Acceso remoto',
@@ -184,67 +171,60 @@ class _RemoteLoginState extends State<RemoteLogin> {
             SizedBox(
               width: 10,
             ),
-            const Text(
-              '(Desconectado)',
-              style: TextStyle(color: Colors.red, fontSize: 16),
-            ),
+            estadoRemoto
+                ? const Text(
+                    '(Conectado)',
+                    style: TextStyle(color: Colors.green, fontSize: 14),
+                  )
+                : const Text(
+                    '(Desconectado)',
+                    style: TextStyle(color: Colors.red, fontSize: 14),
+                  ),
           ],
         ),
         TextField(
           cursorColor: Colors.black,
-          style: const TextStyle(color: Colors.black),
-          decoration: InputDecoration(
-            // filled: true,
-            // fillColor: Colors.grey[700],
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(width: 1, color: Colors.orange),
-              borderRadius: BorderRadius.circular(50),
-            ),
-            hintText: 'Usuario',
-            hintStyle: const TextStyle(color: Colors.white),
-          ),
+          style: const TextStyle(color: Colors.white),
+          decoration: decorationTextFiel('Usuario'),
           controller: _controllerUser,
           onSubmitted: (String valuet) {
             // textoescrito = valuet;
           },
         ),
+        SizedBox(height: 4),
         TextField(
           cursorColor: Colors.black,
-          style: const TextStyle(color: Colors.black),
-          decoration: InputDecoration(
-            // filled: true,
-            // fillColor: Colors.grey[700],
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(width: 1, color: Colors.orange),
-              borderRadius: BorderRadius.circular(50),
-            ),
-            hintText: 'Contrasenia',
-            hintStyle: const TextStyle(color: Colors.white),
-          ),
+          style: const TextStyle(color: Colors.white),
+          decoration: decorationTextFiel('Contrasenia'),
           controller: _controllerPasw,
           onSubmitted: (String valuet) {
             // textoescrito = valuet;
           },
         ),
+        SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextButton(
-              onPressed: () {
-                widget.fbManager.connect('user1@app.com', 'user123');
-              },
-              child: const Text(
-                'Conectar',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                widget.fbManager.disconnect();
-              },
-              child: const Text(
-                'Desonectar',
-                style: TextStyle(color: Colors.white),
+            Container(
+              decoration: decorationContainerButton(),
+              child: TextButton(
+                onPressed: () {
+                  if (estadoRemoto) {
+                    widget.fbManager.disconnect();
+                  } else {
+                    widget.fbManager
+                        .connect(_controllerUser.text, _controllerPasw.text);
+                  }
+                },
+                child: estadoRemoto
+                    ? const Text(
+                        'Desconectar',
+                        style: TextStyle(color: Colors.white),
+                      )
+                    : const Text(
+                        'Conectar',
+                        style: TextStyle(color: Colors.white),
+                      ),
               ),
             ),
           ],
@@ -252,4 +232,24 @@ class _RemoteLoginState extends State<RemoteLogin> {
       ],
     );
   }
+}
+
+InputDecoration decorationTextFiel(String textoinicial) {
+  return InputDecoration(
+    filled: true,
+    fillColor: Colors.grey[900],
+    enabledBorder: OutlineInputBorder(
+      // borderSide: BorderSide(width: 1, color: Colors.orange),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    hintText: textoinicial,
+    hintStyle: const TextStyle(color: Colors.white),
+  );
+}
+
+BoxDecoration decorationContainerButton() {
+  return BoxDecoration(
+      // border: Border.all(color: Colors.orange, width: 1),
+      color: Colors.grey[900],
+      borderRadius: const BorderRadius.all(Radius.circular(8)));
 }

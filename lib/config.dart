@@ -20,9 +20,7 @@ class Config extends StatelessWidget {
     final dbpath = estadomqtt.getServerId();
     final doc = dbfirebase.doc('/${dbpath}toApp/mod-modsactivos');
 
-    if (estadomqtt.getAppConnectionState ==
-            MQTTAppConnectionState.disconnected &&
-        estadomqtt.getRemoteConnectionState == RemoteConnectionState.conected) {
+    if (!estadomqtt.getLocalState && estadomqtt.getRemoteState) {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: doc.snapshots(),
         builder: (context, snapshot) {

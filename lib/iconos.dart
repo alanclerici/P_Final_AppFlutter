@@ -20,9 +20,7 @@ class IconoModSens extends StatelessWidget {
     final dbpath = estadomqtt.getServerId();
     final doc = dbfirebase.doc('/${dbpath}toApp/mod-$id-$tipo');
 
-    if (estadomqtt.getAppConnectionState ==
-            MQTTAppConnectionState.disconnected &&
-        estadomqtt.getRemoteConnectionState == RemoteConnectionState.conected) {
+    if (!estadomqtt.getLocalState && estadomqtt.getRemoteState) {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: doc.snapshots(),
         builder: (context, snapshot) {
@@ -99,9 +97,7 @@ class IconoModRele extends StatelessWidget {
     final dbpath = estadomqtt.getServerId();
     final doc = dbfirebase.doc('/${dbpath}toApp/mod-$id-estado');
 
-    if (estadomqtt.getAppConnectionState ==
-            MQTTAppConnectionState.disconnected &&
-        estadomqtt.getRemoteConnectionState == RemoteConnectionState.conected) {
+    if (!estadomqtt.getLocalState && estadomqtt.getRemoteState) {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: doc.snapshots(),
         builder: (context, snapshot) {
@@ -296,10 +292,7 @@ class IconoCtrlIR extends StatelessWidget {
         color: Colors.white,
         onPressed: () {
           if (modo == 'normal' && codigo != 'null') {
-            if (estadomqtt.getAppConnectionState ==
-                    MQTTAppConnectionState.disconnected &&
-                estadomqtt.getRemoteConnectionState ==
-                    RemoteConnectionState.conected) {
+            if (!estadomqtt.getLocalState && estadomqtt.getRemoteState) {
               CollectionReference writedb =
                   FirebaseFirestore.instance.collection('${dbpath}toServer');
               writedb.doc('mod-$idmodulo').update(
@@ -310,10 +303,7 @@ class IconoCtrlIR extends StatelessWidget {
             }
           }
           if (modo == 'configuracion') {
-            if (estadomqtt.getAppConnectionState ==
-                    MQTTAppConnectionState.disconnected &&
-                estadomqtt.getRemoteConnectionState ==
-                    RemoteConnectionState.conected) {
+            if (!estadomqtt.getLocalState && estadomqtt.getRemoteState) {
               CollectionReference writedb =
                   FirebaseFirestore.instance.collection('${dbpath}toServer');
               writedb.doc('mod-$idmodulo').update({'mod-$idmodulo': idboton});

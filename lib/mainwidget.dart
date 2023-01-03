@@ -34,40 +34,41 @@ class _MainWidgetState extends State<MainWidget> {
   void initState() {
     super.initState();
 
-    NetworkInterface.list().then((interfaces) {
-      for (var i in interfaces) {
-        if (i.name.contains('wlan')) {
-          ipBroker = getBrokerIp(i.addresses.last.address);
-        }
-      }
-    });
-
-    ipBroker = '192.168.0.200';
+    //deteccion de ip de red
+    // NetworkInterface.list().then((interfaces) {
+    //   for (var i in interfaces) {
+    //     if (i.name.contains('wlan')) {
+    //       ipBroker = getBrokerIp(i.addresses.last.address);
+    //     }
+    //   }
+    // });
 
     // CLAVE
     // ----- Esto se ejecuta una vez se construye el widget. Me permite ejecutar la func de conexion al broker
     WidgetsBinding.instance.addPostFrameCallback((_) {
       manager.set(
-        ipBroker,
+        '',
         '/mod/#',
         'app',
         currentAppState,
       );
       fbManager.set(currentAppState);
-      fbManager.listen();
+      fbManager.listen(); //chequeo si estoy logueado (ver func)
 
       Db.instance.getAllItems().then((value) {
         datoDB = value;
         if (datoDB.isNotEmpty) {
           //si encuentro el codigo conecto y lanzo el listener para detectar cambios en la red
-          manager.initializeMQTTClient(
-              datoDB[0].toMap()['clave'], datoDB[0].toMap()['ip']);
-          // manager.connect();
           subscription = Connectivity()
               .onConnectivityChanged
               .listen((ConnectivityResult result) {
-            if (result == ConnectivityResult.wifi) {
+            if (result == ConnectivityResult.wifi &&
+                currentAppState.getAppConnectionState ==
+                    MQTTAppConnectionState.disconnected) {
               print('conectao');
+              manager.initializeMQTTClient(
+                  datoDB[0].toMap()['clave'], datoDB[0].toMap()['ip']);
+              // manager.connect();
             } else if (result == ConnectivityResult.mobile) {
             } else {
               print('no conectao');
@@ -117,7 +118,9 @@ class _MainWidgetState extends State<MainWidget> {
     List<Widget> vistas = [Home(manager), Task(manager), Config(manager)];
 
     return Scaffold(
-      floatingActionButton: _selectedIndex == 1 ? botonflotante : null,
+      floatingActionButton: _selectedIndex == 1 && currentAppState.getLocalState
+          ? botonflotante
+          : null,
       backgroundColor: Colors.black,
       appBar: AppBar(
         actions: <Widget>[
