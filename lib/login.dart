@@ -156,8 +156,6 @@ class _RemoteLoginState extends State<RemoteLogin> {
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<MQTTAppState>(context);
-    final dbfirebase = FirebaseFirestore.instance;
-    final doc = dbfirebase.doc('/server1toApp/mod-R00001-estado');
     estadoRemoto = appState.getRemoteState;
     return Column(
       children: [
@@ -168,9 +166,7 @@ class _RemoteLoginState extends State<RemoteLogin> {
               'Acceso remoto',
               style: TextStyle(color: Colors.white, fontSize: 20),
             ),
-            SizedBox(
-              width: 10,
-            ),
+            SizedBox(width: 10),
             estadoRemoto
                 ? const Text(
                     '(Conectado)',
@@ -195,7 +191,7 @@ class _RemoteLoginState extends State<RemoteLogin> {
         TextField(
           cursorColor: Colors.black,
           style: const TextStyle(color: Colors.white),
-          decoration: decorationTextFiel('Contrasenia'),
+          decoration: decorationTextFiel('Contraseña'),
           controller: _controllerPasw,
           onSubmitted: (String valuet) {
             // textoescrito = valuet;
@@ -249,7 +245,8 @@ InputDecoration decorationTextFiel(String textoinicial) {
 
 BoxDecoration decorationContainerButton() {
   return BoxDecoration(
-      // border: Border.all(color: Colors.orange, width: 1),
-      color: Colors.grey[900],
-      borderRadius: const BorderRadius.all(Radius.circular(8)));
+    // border: Border.all(color: Colors.orange, width: 1),
+    color: Colors.grey[900],
+    borderRadius: const BorderRadius.all(Radius.circular(8)),
+  );
 }

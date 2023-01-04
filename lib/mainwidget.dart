@@ -13,6 +13,8 @@ import 'package:smart_home/firebasemanager.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:io';
 
+const Color grisbase = Color.fromARGB(255, 30, 30, 30); //constante para colores
+
 class MainWidget extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -63,8 +65,7 @@ class _MainWidgetState extends State<MainWidget> {
               .onConnectivityChanged
               .listen((ConnectivityResult result) {
             if (result == ConnectivityResult.wifi &&
-                currentAppState.getAppConnectionState ==
-                    MQTTAppConnectionState.disconnected) {
+                !currentAppState.getLocalState) {
               print('conectao');
               manager.initializeMQTTClient(
                   datoDB[0].toMap()['clave'], datoDB[0].toMap()['ip']);
@@ -85,8 +86,6 @@ class _MainWidgetState extends State<MainWidget> {
     subscription.cancel();
   }
 
-  static const Color grisbase =
-      Color.fromARGB(255, 30, 30, 30); //constante para colores
   int _selectedIndex = 0; //indice de pagina
 
   //funcion para cambio de pagina

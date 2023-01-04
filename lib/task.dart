@@ -59,6 +59,7 @@ class Tarea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estadomqtt = Provider.of<MQTTAppState>(context);
     return Container(
       height: 60,
       margin: const EdgeInsets.only(
@@ -70,28 +71,30 @@ class Tarea extends StatelessWidget {
           color: Colors.grey[850],
           borderRadius: const BorderRadius.all(Radius.circular(8))),
       child: TextButton(
-        onPressed: () => showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Borrar tarea'),
-            content: const Text('Desea borrar esta tarea?'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: () {
-                  manager.publish('/task/borrar/', nombre);
-                  Navigator.pop(context);
-                },
-                child: const Text('Borrar'),
-              ),
-            ],
-          ),
-        ),
+        onPressed: estadomqtt.getLocalState
+            ? () => showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Borrar tarea'),
+                    content: const Text('Desea borrar esta tarea?'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancelar'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          manager.publish('/task/borrar/', nombre);
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Borrar'),
+                      ),
+                    ],
+                  ),
+                )
+            : null,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -141,6 +144,7 @@ class SwitchEstado extends StatelessWidget {
         } else {
           if (estadomqtt.getLocalState) {
             manager.publish('/task/setestado/$nombre', 'activa');
+            print(nombre);
           } else {
             CollectionReference writedb =
                 FirebaseFirestore.instance.collection('${dbpath}toServer');

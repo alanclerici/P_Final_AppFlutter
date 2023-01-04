@@ -52,6 +52,7 @@ class Modulo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estadomqtt = Provider.of<MQTTAppState>(context);
     return Container(
       height: 60,
       margin: const EdgeInsets.only(
@@ -71,7 +72,7 @@ class Modulo extends StatelessWidget {
                   style: const TextStyle(fontSize: 20, color: Colors.white))),
           Row(
             children: [
-              id[0] == 'L'
+              id[0] == 'L' && estadomqtt.getLocalState
                   ? IconButton(
                       onPressed: (() {
                         manager.publish('/mod/$id/comandos', 'configuracion');
