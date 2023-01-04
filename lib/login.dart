@@ -108,13 +108,30 @@ class _LocalLoginState extends State<LocalLogin> {
                 decoration: decorationContainerButton(),
                 child: TextButton(
                   onPressed: () {
-                    final ipBroker = '192.168.0.200';
-                    // sincronzacion();
-                    Db.instance.insert(
-                        DatoDB(id: 1, ip: ipBroker, clave: _controller.text));
-                    widget.manager
-                        .initializeMQTTClient(_controller.text, ipBroker);
-                    widget.manager.connect();
+                    // final ipBroker = '192.168.0.200';
+                    UDP.bind(Endpoint.any(port: Port(2222))).then((receiver) {
+                      receiver.asStream().listen((datagram) {
+                        var ipBroker = String.fromCharCodes(datagram!.data);
+                        if (ipBroker.toString() != 'GetIp') {
+                          print(ipBroker);
+                          widget.manager
+                              .initializeMQTTClient(_controller.text, ipBroker);
+                          widget.manager.connect();
+                          Db.instance
+                              .insert(DatoDB(
+                                  id: 1, ip: ipBroker, clave: _controller.text))
+                              .then((value) => receiver.close());
+                        }
+                      });
+                      sendBroadcastUDP();
+                      // UDP.bind(Endpoint.any()).then((sender) async {
+                      //   await sender.send(
+                      //       "GetIp".codeUnits,
+                      //       Endpoint.unicast(InternetAddress('192.168.0.255'),
+                      //           port: Port(2222)));
+                      //   sender.close();
+                      // });
+                    });
                   },
                   child: const Text(
                     'Sincronizar',
@@ -249,4 +266,15 @@ BoxDecoration decorationContainerButton() {
     color: Colors.grey[900],
     borderRadius: const BorderRadius.all(Radius.circular(8)),
   );
+}
+
+void sendBroadcastUDP() {
+  UDP.bind(Endpoint.any()).then((sender) async {
+    for (var i = 2; i < 255; i++) {
+      await sender.send("GetIp".codeUnits,
+          Endpoint.unicast(InternetAddress('192.168.0.$i'), port: Port(2222)));
+      // print('mando $i');
+    }
+    sender.close();
+  });
 }
