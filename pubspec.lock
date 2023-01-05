@@ -212,6 +212,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.17.0"
+  intranet_ip:
+    dependency: "direct main"
+    description:
+      name: intranet_ip
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   js:
     dependency: transitive
     description:
@@ -296,6 +303,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.0.0"
+  random_uint8list:
+    dependency: transitive
+    description:
+      name: random_uint8list
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   sky_engine:
     dependency: transitive
     description: flutter

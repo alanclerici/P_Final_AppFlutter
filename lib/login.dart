@@ -1,15 +1,15 @@
-import 'dart:ffi';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_home/datoDB.dart';
 import 'package:smart_home/db.dart';
 import 'package:smart_home/mqtt/MQTTManager.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:smart_home/firebasemanager.dart';
 import 'package:udp/udp.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
+import 'package:intranet_ip/intranet_ip.dart';
 
 const Color grisbase = Color.fromARGB(255, 50, 50, 50);
 
@@ -269,12 +269,19 @@ BoxDecoration decorationContainerButton() {
 }
 
 void sendBroadcastUDP() {
-  UDP.bind(Endpoint.any()).then((sender) async {
-    for (var i = 2; i < 255; i++) {
-      await sender.send("GetIp".codeUnits,
-          Endpoint.unicast(InternetAddress('192.168.0.$i'), port: Port(2222)));
-      // print('mando $i');
+  intranetIpv4().then((value) {
+    final ip = value.rawAddress;
+    if (ip.isNotEmpty) {
+      UDP.bind(Endpoint.any()).then((sender) async {
+        for (var i = 2; i < 255; i++) {
+          await sender.send(
+              "GetIp".codeUnits,
+              Endpoint.unicast(InternetAddress('${ip[0]}.${ip[1]}.${ip[2]}.$i'),
+                  port: Port(2222)));
+          // print('mando $i');
+        }
+        sender.close();
+      });
     }
-    sender.close();
   });
 }

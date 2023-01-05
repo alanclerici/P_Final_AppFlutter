@@ -36,15 +36,6 @@ class _MainWidgetState extends State<MainWidget> {
   void initState() {
     super.initState();
 
-    //deteccion de ip de red
-    // NetworkInterface.list().then((interfaces) {
-    //   for (var i in interfaces) {
-    //     if (i.name.contains('wlan')) {
-    //       ipBroker = getBrokerIp(i.addresses.last.address);
-    //     }
-    //   }
-    // });
-
     // CLAVE
     // ----- Esto se ejecuta una vez se construye el widget. Me permite ejecutar la func de conexion al broker
     WidgetsBinding.instance.addPostFrameCallback((_) {
