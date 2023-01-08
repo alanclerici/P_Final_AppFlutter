@@ -60,7 +60,7 @@ class _MainWidgetState extends State<MainWidget> {
               print('conectao');
               manager.initializeMQTTClient(
                   datoDB[0].toMap()['clave'], datoDB[0].toMap()['ip']);
-              // manager.connect();
+              manager.connect();
             } else if (result == ConnectivityResult.mobile) {
             } else {
               print('no conectao');

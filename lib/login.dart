@@ -109,7 +109,9 @@ class _LocalLoginState extends State<LocalLogin> {
                 child: TextButton(
                   onPressed: () {
                     // final ipBroker = '192.168.0.200';
-                    UDP.bind(Endpoint.any(port: Port(2222))).then((receiver) {
+                    UDP
+                        .bind(Endpoint.any(port: const Port(8888)))
+                        .then((receiver) {
                       receiver.asStream().listen((datagram) {
                         var ipBroker = String.fromCharCodes(datagram!.data);
                         if (ipBroker.toString() != 'GetIp') {
@@ -124,13 +126,6 @@ class _LocalLoginState extends State<LocalLogin> {
                         }
                       });
                       sendBroadcastUDP();
-                      // UDP.bind(Endpoint.any()).then((sender) async {
-                      //   await sender.send(
-                      //       "GetIp".codeUnits,
-                      //       Endpoint.unicast(InternetAddress('192.168.0.255'),
-                      //           port: Port(2222)));
-                      //   sender.close();
-                      // });
                     });
                   },
                   child: const Text(
