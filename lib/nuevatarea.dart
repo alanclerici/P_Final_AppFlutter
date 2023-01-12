@@ -103,17 +103,8 @@ class GuardarCancelar extends StatelessWidget {
           color: grisbase,
           child: TextButton(
               onPressed: () {
-                final List<String> data = estado.getAll();
-                //trama: nombre/modulo;var;comparacion-valor/modulo;tipo/tipo;causa
-                //no pueden ser vacio: nombre,ambos modulos, ambos tipos (causa y efecto),valor secundario
-                if (data[0].isNotEmpty &&
-                    data[1].isNotEmpty &&
-                    data[2].isNotEmpty &&
-                    data[5].isNotEmpty &&
-                    data[6].isNotEmpty) {
-                  final String msg =
-                      '${data[0]}/${data[1]};${data[2]};${data[3]}-${data[4]}/${data[5]};${data[6]}/${data[7]};${data[8]};${data[9]}';
-                  manager.publish('/task/nueva', msg);
+                if (estado.getMsgNewTarea().isNotEmpty) {
+                  manager.publish('/task/nueva', estado.getMsgNewTarea());
                   estado.resetAll();
                   Navigator.pop(context);
                 }
@@ -147,32 +138,32 @@ class _DropButtonState extends State<DropButton> {
     super.didChangeDependencies();
     final estado = Provider.of<MQTTAppState>(context);
 
-    switch (widget.tipo) {
-      case 'moduloCausa':
-        list = estado.getListModulos();
-        break;
-      case 'varCausa':
-        list = estado.getListVarCausa();
-        break;
-      case 'tipoCausa':
-        list = estado.getListTipoCausa();
-        break;
-      case 'moduloEfecto':
-        list = estado.getListModulos();
-        break;
-      case 'tipoEfecto':
-        list = estado.getListTipoEfecto();
-        break;
-      case 'tipoSecundario':
-        list = estado.getListTipoSecundario();
-        break;
-      case 'causaSecundaria':
-        list = estado.getListCausaSecundaria();
-        break;
-      default:
-        list = ['no valido'];
-        break;
-    }
+    // switch (widget.tipo) {
+    //   case 'moduloCausa':
+    //     list = estado.getListModulos();
+    //     break;
+    //   case 'varCausa':
+    //     list = estado.getListVarCausa();
+    //     break;
+    //   case 'tipoCausa':
+    //     list = estado.getListTipoCausa();
+    //     break;
+    //   case 'moduloEfecto':
+    //     list = estado.getListModulos();
+    //     break;
+    //   case 'tipoEfecto':
+    //     list = estado.getListTipoEfecto();
+    //     break;
+    //   case 'tipoSecundario':
+    //     list = estado.getListTipoSecundario();
+    //     break;
+    //   case 'causaSecundaria':
+    //     list = estado.getListCausaSecundaria();
+    //     break;
+    //   default:
+    //     list = ['no valido'];
+    //     break;
+    // }
   }
 
   @override
@@ -297,6 +288,9 @@ class _InputTextState extends State<InputText> {
           hintText: 'insertar nombre',
           hintStyle: const TextStyle(color: Colors.black)),
       controller: _controller,
+      onChanged: (value) {
+        estado.setnombre(value);
+      },
       onSubmitted: (String valuet) {
         estado.setnombre(valuet);
       },
@@ -508,7 +502,7 @@ class InputPeriodo extends StatefulWidget {
 }
 
 class _InputPeriodoState extends State<InputPeriodo> {
-  double min = 1, hora = 0;
+  int min = 1, hora = 0;
   @override
   Widget build(BuildContext context) {
     final estado = Provider.of<MQTTAppState>(context);
@@ -520,7 +514,7 @@ class _InputPeriodoState extends State<InputPeriodo> {
             max: 100,
             value: 1,
             onChanged: (value) {
-              hora = value;
+              hora = value.toInt();
               if (widget.tipo == 'causa') {
                 estado.setvalorCausa('$hora:$min');
               } else {
@@ -538,7 +532,7 @@ class _InputPeriodoState extends State<InputPeriodo> {
             max: 24,
             value: 0,
             onChanged: (value) {
-              min = value;
+              min = value.toInt();
               if (widget.tipo == 'causa') {
                 estado.setvalorCausa('$hora:$min');
               } else {

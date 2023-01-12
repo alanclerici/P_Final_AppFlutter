@@ -182,6 +182,91 @@ class MQTTAppState with ChangeNotifier {
     ];
   }
 
+  //devuelve el nombre de la variable de interes para terminar de armar el topico causa
+  String getVarSxxxxx() {
+    switch (_varCausa) {
+      case 'Temp.':
+        return 'temperatura';
+      case 'Hum.':
+        return 'humedad';
+      default:
+        return '';
+    }
+  }
+
+  String getEfectoRxxxx() {
+    switch (_tipoEfecto) {
+      case 'Encender':
+        return 'on';
+      case 'Apagar':
+        return 'off';
+      case 'Invertir':
+        return 'tog';
+      default:
+        return '';
+    }
+  }
+
+  String getEfectoRevertirRxxxx() {
+    switch (_tipoEfecto) {
+      case 'Encender':
+        return 'off';
+      case 'Apagar.':
+        return 'on';
+      default:
+        return '';
+    }
+  }
+
+  String getMsgNewTarea() {
+    String msg, topicoCausa, topicoEfecto, msgEfecto, msgSecundaria = '';
+
+    //causa
+    if (_moduloCausa == 'Tiempo') {
+      topicoCausa = 'Tiempo';
+      _tipoCausa = _varCausa; //se podria hacer mas legible
+    } else {
+      topicoCausa = '/mod/$_moduloCausa/';
+      switch (_moduloCausa[0]) {
+        case 'S':
+          topicoCausa = topicoCausa + getVarSxxxxx();
+          break;
+        default:
+          return '';
+      }
+    }
+
+    //efecto
+    switch (_moduloEfecto[0]) {
+      case 'R':
+        topicoEfecto = '/mod/$_moduloEfecto/comandos';
+        msgEfecto = getEfectoRxxxx();
+        break;
+      default:
+        return '';
+    }
+
+    //efecto secundario
+    if (_tipoSecundario.isNotEmpty && _tipoSecundario != 'Ninguno') {
+      //implementado solo para revertir (por ahora)
+      switch (_moduloEfecto[0]) {
+        case 'R':
+          msgSecundaria = getEfectoRevertirRxxxx();
+          break;
+        default:
+          break;
+      }
+    } else {}
+
+    if (_nombre.isNotEmpty) {
+      msg =
+          '$_nombre;$topicoCausa-$_tipoCausa-$_valorCausa;$topicoEfecto-$msgEfecto;$_tipoSecundario-$_causaSecundaria-$_valorSecundario-$msgSecundaria';
+      return msg;
+    } else {
+      return '';
+    }
+  }
+
   //devuelvo modulos activos (data que llega de mqtt)
   List<String> getListModulos() {
     return listModulos;
@@ -225,7 +310,7 @@ class MQTTAppState with ChangeNotifier {
             'Tipo',
             'Mayor que',
             'Menor que',
-            'igual a',
+            'Igual a',
           ];
         default:
           return ['tipo invalido'];
