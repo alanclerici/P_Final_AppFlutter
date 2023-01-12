@@ -107,6 +107,22 @@ class GuardarCancelar extends StatelessWidget {
                   manager.publish('/task/nueva', estado.getMsgNewTarea());
                   estado.resetAll();
                   Navigator.pop(context);
+                } else {
+                  showDialog<String>(
+                    context: context,
+                    builder: (BuildContext context) => AlertDialog(
+                      title: const Text('Error'),
+                      content: const Text('Ingrese todos los datos'),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Aceptar'),
+                        ),
+                      ],
+                    ),
+                  );
                 }
               },
               child: Text(

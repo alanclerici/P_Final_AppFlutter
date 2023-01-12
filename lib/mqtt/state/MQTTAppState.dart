@@ -258,7 +258,11 @@ class MQTTAppState with ChangeNotifier {
       }
     } else {}
 
-    if (_nombre.isNotEmpty) {
+    if (_nombre.isNotEmpty &&
+        _tipoCausa.isNotEmpty &&
+        _valorCausa.isNotEmpty &&
+        topicoEfecto.isNotEmpty &&
+        msgEfecto.isNotEmpty) {
       msg =
           '$_nombre;$topicoCausa-$_tipoCausa-$_valorCausa;$topicoEfecto-$msgEfecto;$_tipoSecundario-$_causaSecundaria-$_valorSecundario-$msgSecundaria';
       return msg;
