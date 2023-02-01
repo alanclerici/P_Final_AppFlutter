@@ -493,15 +493,14 @@ class _InputTimeState extends State<InputTime> {
               context: context,
             );
             if (pickedTime != null) {
-              DateTime parsedTime =
-                  DateFormat.jm().parse(pickedTime.format(context).toString());
-              String formattedTime = DateFormat('HH:mm:ss').format(parsedTime);
+              int hora = pickedTime.hour;
+              int min = pickedTime.minute;
+              //anio,mes,dia,hora,min,seg,mili,micro
+              DateTime tiempo = DateTime(2000, 1, 1, hora, min, 0, 0, 0);
               setState(() {
-                formattedTime =
-                    '${formattedTime.split(':')[0]}:${formattedTime.split(':')[1]}';
-                print(formattedTime);
-                timeinput.text = formattedTime;
-                estado.setvalorCausa(formattedTime);
+                timeinput.text = DateFormat('HH:mm').format(tiempo).toString();
+                estado.setvalorCausa(
+                    DateFormat('HH:mm').format(tiempo.toUtc()).toString());
               });
             }
           },

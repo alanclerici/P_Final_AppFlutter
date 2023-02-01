@@ -211,8 +211,10 @@ class MQTTAppState with ChangeNotifier {
     switch (_tipoEfecto) {
       case 'Encender':
         return 'off';
-      case 'Apagar.':
+      case 'Apagar':
         return 'on';
+      case 'Invertir':
+        return 'tog';
       default:
         return '';
     }
