@@ -39,13 +39,8 @@ class _MainWidgetState extends State<MainWidget> {
     // CLAVE
     // ----- Esto se ejecuta una vez se construye el widget. Me permite ejecutar la func de conexion al broker
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      manager.set(
-        '',
-        '/mod/#',
-        'app',
-        currentAppState,
-      );
-      fbManager.set(currentAppState);
+      manager.setCurrentState(currentAppState);
+      fbManager.setCurrentState(currentAppState);
       fbManager.listen(); //chequeo si estoy logueado (ver func)
 
       Db.instance.getAllItems().then((value) {

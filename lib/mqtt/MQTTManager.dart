@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:smart_home/mqtt/state/MQTTAppState.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -7,13 +9,12 @@ class MQTTManager {
   MQTTAppState _currentState = MQTTAppState();
   MqttServerClient? _client;
   String _identifier = '';
-  String _host = '';
-  String _topic = '';
+  final String _topic = '/mod/#';
 
-  void set(String host, String topic, String identifier, MQTTAppState state) {
-    _identifier = identifier;
-    _host = host;
-    _topic = topic;
+  void setCurrentState(MQTTAppState state) {
+    _identifier = Random()
+        .nextInt(100000000)
+        .toString(); // genero num aleatorio como id de mqtt
     _currentState = state;
   }
 

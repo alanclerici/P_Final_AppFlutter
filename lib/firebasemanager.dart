@@ -6,7 +6,7 @@ class FirebaseManager {
   MQTTAppState _currentState = MQTTAppState();
   CollectionReference db = FirebaseFirestore.instance.collection('serverUid');
 
-  void set(MQTTAppState state) {
+  void setCurrentState(MQTTAppState state) {
     _currentState = state;
   }
 
