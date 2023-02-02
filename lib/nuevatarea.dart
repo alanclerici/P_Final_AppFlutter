@@ -112,7 +112,9 @@ class GuardarCancelar extends StatelessWidget {
                     context: context,
                     builder: (BuildContext context) => AlertDialog(
                       title: const Text('Error'),
-                      content: const Text('Ingrese todos los datos'),
+                      content: const Text('''
+- Ingrese todos los datos
+- Compruebe el nombre asignado a la tarea (este no puede repetirse)'''),
                       actions: <Widget>[
                         TextButton(
                           onPressed: () {
@@ -153,33 +155,6 @@ class _DropButtonState extends State<DropButton> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final estado = Provider.of<MQTTAppState>(context);
-
-    // switch (widget.tipo) {
-    //   case 'moduloCausa':
-    //     list = estado.getListModulos();
-    //     break;
-    //   case 'varCausa':
-    //     list = estado.getListVarCausa();
-    //     break;
-    //   case 'tipoCausa':
-    //     list = estado.getListTipoCausa();
-    //     break;
-    //   case 'moduloEfecto':
-    //     list = estado.getListModulos();
-    //     break;
-    //   case 'tipoEfecto':
-    //     list = estado.getListTipoEfecto();
-    //     break;
-    //   case 'tipoSecundario':
-    //     list = estado.getListTipoSecundario();
-    //     break;
-    //   case 'causaSecundaria':
-    //     list = estado.getListCausaSecundaria();
-    //     break;
-    //   default:
-    //     list = ['no valido'];
-    //     break;
-    // }
   }
 
   @override
@@ -293,6 +268,7 @@ class _InputTextState extends State<InputText> {
   Widget build(BuildContext context) {
     final estado = Provider.of<MQTTAppState>(context);
     return TextField(
+      textCapitalization: TextCapitalization.sentences, //automayuscula inicio
       cursorColor: Colors.black,
       style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(

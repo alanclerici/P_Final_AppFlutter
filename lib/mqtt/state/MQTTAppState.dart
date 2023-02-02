@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 /////////////////////////////////////////////////////////////
 ///
@@ -221,7 +223,26 @@ class MQTTAppState with ChangeNotifier {
   }
 
   String getMsgNewTarea() {
-    String msg, topicoCausa, topicoEfecto, msgEfecto, msgSecundaria = '';
+    // si por alguna razon algun dato no es valido en el proceso, devuelvo '' (vacio)
+    String msg,
+        topicoCausa,
+        topicoEfecto,
+        msgEfecto,
+        msgSecundaria = '',
+        aux = '';
+    List<String> lista = [];
+
+    // obtengo lista de tareas activas (solo nombres)
+    if (_receivedTask.isNotEmpty) {
+      for (var i in jsonDecode(_receivedTask)) {
+        aux = i['nombre'];
+        lista.add(aux.toLowerCase());
+      }
+    }
+    //valido el nombre
+    if (lista.contains(_nombre.toLowerCase())) {
+      return '';
+    }
 
     //causa
     if (_moduloCausa == 'Tiempo') {
