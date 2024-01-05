@@ -222,15 +222,16 @@ class ContainerModRele extends StatelessWidget {
 class IconoCtrlIR extends StatelessWidget {
   //el constructor recibe objeto para mandar mqtt, tipo de icono, id del modulo, modo de operacion
   //y codigo que debe enviar cuanbdo se pulse
-  IconoCtrlIR(this.manager, this.tipo, this.idmodulo, this.idboton, this.modo,
-      this.codigo,
+  IconoCtrlIR(this.estadomqtt, this.manager, this.tipo, this.idmodulo,
+      this.idboton, this.modo, this.codigo,
       {super.key});
   final String tipo, idmodulo, idboton, modo, codigo;
+  final estadomqtt;
   MQTTManager manager;
 
   @override
   Widget build(BuildContext context) {
-    final estadomqtt = Provider.of<MQTTAppState>(context);
+    // final estadomqtt = Provider.of<MQTTAppState>(context);
     final dbfirebase = FirebaseFirestore.instance;
     final dbpath = estadomqtt.getServerId();
     final doc = dbfirebase.doc('/${dbpath}toApp/mod-$idmodulo');

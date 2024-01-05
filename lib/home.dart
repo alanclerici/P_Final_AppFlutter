@@ -59,12 +59,14 @@ class Zona extends StatelessWidget {
             return const CircularProgressIndicator();
           } else {
             String datafirebase = snapshot.data!['mod-modsactivos'];
-            return grillaContainer(datafirebase, manager, nombrezona);
+            return grillaContainer(
+                datafirebase, manager, nombrezona, estadomqtt);
           }
         },
       );
     } else {
-      return grillaContainer(estadomqtt.getReceivedStatus, manager, nombrezona);
+      return grillaContainer(
+          estadomqtt.getReceivedStatus, manager, nombrezona, estadomqtt);
     }
   }
 }
@@ -88,7 +90,8 @@ List<Widget> listaZonas(String lista, MQTTManager manager) {
   return zonas;
 }
 
-List<Widget> listaGrilla(String lista, MQTTManager manager, String nombrezona) {
+List<Widget> listaGrilla(String lista, MQTTManager manager, String nombrezona,
+    MQTTAppState estadomqtt) {
   int cont = 0;
   List<Widget> mods = [];
   List<Widget> grilla = []; //arreglo de row
@@ -112,7 +115,8 @@ List<Widget> listaGrilla(String lista, MQTTManager manager, String nombrezona) {
           ));
         }
         if (i['id'][0] == 'L') {
-          grilla.add(LayoutTv(manager, i['funcion'], i['id'], 'normal'));
+          grilla.add(
+              LayoutTv(estadomqtt, manager, i['funcion'], i['id'], 'normal'));
           //me aseguro de mandar el msg para que el mod este en funcionamiento normal
           // manager.publish('/mod/${i['id']}/comandos', 'normal');
         }
@@ -147,8 +151,8 @@ List<Widget> listaGrilla(String lista, MQTTManager manager, String nombrezona) {
   return grilla;
 }
 
-Container grillaContainer(
-    String lista, MQTTManager manager, String nombrezona) {
+Container grillaContainer(String lista, MQTTManager manager, String nombrezona,
+    MQTTAppState estadomqtt) {
   return Container(
     margin: const EdgeInsets.only(
       top: 20,
@@ -159,14 +163,14 @@ Container grillaContainer(
         color: Colors.grey[850],
         borderRadius: const BorderRadius.all(Radius.circular(8))),
     child: Column(
-      children: listaGrillaVer2(lista, manager, nombrezona),
+      children: listaGrillaVer2(lista, manager, nombrezona, estadomqtt),
     ),
   );
 }
 
 //de prueba(sin uso por ahoras)
-List<Widget> listaGrillaVer2(
-    String lista, MQTTManager manager, String nombrezona) {
+List<Widget> listaGrillaVer2(String lista, MQTTManager manager,
+    String nombrezona, MQTTAppState estadomqtt) {
   int cont = 0;
   List<Widget> mods = []; //para ir acumulando los modulos
   List<Widget> grilla = []; //arreglo de row
@@ -190,7 +194,8 @@ List<Widget> listaGrillaVer2(
           ));
         }
         if (i['id'][0] == 'L') {
-          grilla.add(LayoutTv(manager, i['funcion'], i['id'], 'normal'));
+          grilla.add(
+              LayoutTv(estadomqtt, manager, i['funcion'], i['id'], 'normal'));
           //me aseguro de mandar el msg para que el mod este en funcionamiento normal
           // manager.publish('/mod/${i['id']}/comandos', 'normal');
         }

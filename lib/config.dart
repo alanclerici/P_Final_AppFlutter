@@ -102,8 +102,8 @@ class Modulo extends StatelessWidget {
                                       title: const Text('Config led'),
                                     ),
                                     body: Center(
-                                        child: LayoutTv(
-                                            manager, '', id, 'configuracion')),
+                                        child: LayoutTv(estadomqtt, manager, '',
+                                            id, 'configuracion')),
                                   ),
                                 )));
                       }),
